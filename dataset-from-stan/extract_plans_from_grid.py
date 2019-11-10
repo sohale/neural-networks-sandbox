@@ -66,27 +66,38 @@ def ext_plans():
             # dataset.append(im)
             #filename = os.path.join('output','p'+str(xi)+'-'+str(yi)+'.png')
             counter += 1
-            filename = os.path.join('output','item'+str(counter)+'.png')
+            filename = os.path.join('./pix2pix-tensorflow/stan_training','item'+str(counter)+'.png')
             imageio.imwrite(filename,  im_pair )
             #print('saved')
 
-    exit(0)
+    #pict_array2d = np.asarray(img)
+    #pict_array2d = scipy.misc.imresize(pict_array2d, (200,200))
 
-    arts = []
-    for image_path in glob.glob("./art1/lines/*.png"):
-            
-            pict_array2d = np.asarray(img)
-            pict_array2d = scipy.misc.imresize(pict_array2d, (200,200))
-
-            # normalise:
-            pict_array2d = np.mean(pict_array2d, axis=2)
-            pict_array2d = 1.0 - (pict_array2d / 255.0)
-
-            assert ART_PIXELS == pict_array2d.size
-
-            arts.append( pict_array2d )
-
-    return arts
 
 train_plans = ext_plans()
 
+"""
+# Installation: (Windows)
+# Install latest anaconda 64 bit
+# Go to Anaconda commandline
+conda create --name tensorf python=3.5
+conda activate tensorf
+pip install cython
+pip install PyHamcrest
+python -m pip install -U matplotlib
+conda install scipy
+conda install -c menpo imageio
+pip install tensorflow==1.15.0
+
+# First time only:
+# From git
+git clone git@github.com:sosi-org/neural-networks-sandbox.git
+
+# Produce images training data
+cd dataset-from-stan
+python extract_plans_from_grid.py
+cd pix2pix-tensorflow
+# Starts training
+python pix2pix.py  --mode train --output_dir stan_out   --input_dir stan_training
+# Wait...
+"""
