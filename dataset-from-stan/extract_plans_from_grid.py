@@ -136,4 +136,12 @@ Run on MacOS
     * source ./tensorf/bin/activate
     * python extract_plans_from_grid.py
 
+    * make sure .png files are in folder `pix2pix-tensorflow/stan_training`
+            and there is an (empty?) directory `pix2pix-tensorflow/stan_out`
+      Alternatively, you unzip files image in `pix2pix-tensorflow/stan_training`
+
+ Start training
+    * cd pix2pix-tensorflow
+    * python pix2pix.py  --mode train --input_dir stan_training --output_dir stan_out 
+
 """
