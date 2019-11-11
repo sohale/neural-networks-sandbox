@@ -28,7 +28,8 @@ def simple_triangles(size_shape):
     rr, cc, val = line_aa(0, 13, 13, 4)
     img[rr, cc] = val * 255
     # scipy.misc.imsave("out.png", img)
-    return [img]
+    img_rgb = np.repeat(img[:,:, None], 3, axis=2)
+    return [img_rgb.flatten()]
 
     #img = np.random.randn(64, size_shape)
     #return img
