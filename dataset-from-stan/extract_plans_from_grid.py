@@ -22,13 +22,17 @@ def ext_plans():
     big_img = np.asarray(big_img)
     print(big_img.shape)  # (682, 1000, 3)
     nx, ny = 17,25 # 25, 17
+    # corners
     x0,y0, mx,my = 36,31, 682-644, 1000-969
 
     w,h = big_img.shape[0], big_img.shape[1]
-    box = (x0,y0, w-mx, h-my)
-    print('box', box)
-    dx,dy = (box[2]-box[0])/nx, (box[3]-box[1])/ny
+    box_main = (x0,y0, w-mx, h-my)
+    print('box_main', box_main)
+
+    dx,dy = (box_main[2]-box_main[0])/nx, (box_main[3]-box_main[1])/ny
     print('dx,dy', dx,dy)
+
+
     # dataset = []
     counter = 0
     for xi in range(3,nx): #range(3): #(nx):
@@ -42,20 +46,20 @@ def ext_plans():
 
             """
             im_grey = np.mean(im,axis=2)[:,:,None]
-            WHITE_D = 80 # 50  10
-            BLACK_D = 40 #100
+            WHITE_TOLERANCE = 80 # 50  10
+            BLACK_TOLERANCE = 40 #100
             im = 255 - im
-            none_white = im_grey < (255 - WHITE_D)
+            none_white = im_grey < (255 - WHITE_TOLERANCE)
             im = im * none_white
             im = 255 - im
-            im = im * (im_grey > BLACK_D)
-            # im = im * (im_grey < 255-WHITE_D)
+            im = im * (im_grey > BLACK_TOLERANCE)
+            # im = im * (im_grey < 255-WHITE_TOLERANCE)
             #im = 255 - im
             """
             im_grey = np.mean(im,axis=2)[:,:,None]
-            WHITE_D = 40 #80 # 50  10
+            WHITE_TOLERANCE = 40 #80 # 50  10
             im = 255 - im
-            none_white = im_grey < (255 - WHITE_D)
+            none_white = im_grey < (255 - WHITE_TOLERANCE)
             im = im * none_white
             im = 255 - im
             im_mask = 255 - np.repeat(none_white.astype(im.dtype) * 255, 3, axis=2)
