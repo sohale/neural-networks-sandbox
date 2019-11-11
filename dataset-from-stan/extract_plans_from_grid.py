@@ -32,6 +32,11 @@ def ext_plans():
     dyy,dxx = (box_main[2]-box_main[0])/nyy, (box_main[3]-box_main[1])/nxx
     print('dyy,dxx', dyy,dxx)
 
+    Y0 = 0
+    Y1 = 1
+    X0 = 2
+    X1 = 3
+
 
     # dataset = []
     counter = 0
@@ -40,10 +45,12 @@ def ext_plans():
 
             # top-left for each sub-picture
             lyy, lxx = (yy0+dyy*yyi), (xx0+dxx*xxi)
+            # Margin: 6,6,9,6
+            subsub_rect = (lyy, lyy+dyy, lxx, lxx+dxx)
             #print('lyy,lxx', lyy,lxx)
-            subpic_rect = math.floor(lyy), math.floor(lyy+dyy), math.floor(lxx), math.floor(lxx+dxx)
+            subpic_rect = math.floor(subsub_rect[Y0]), math.floor(subsub_rect[Y1]), math.floor(subsub_rect[X0]), math.floor(subsub_rect[X1])
             #print('subpic_rect', subpic_rect)
-            im = original_img[subpic_rect[0]:subpic_rect[1], subpic_rect[2]:subpic_rect[3], :]
+            im = original_img[subpic_rect[Y0]:subpic_rect[Y1], subpic_rect[X0]:subpic_rect[X1], :]
             # im = original_img[10:49,49:88,:]
 
             """
@@ -66,7 +73,6 @@ def ext_plans():
             im = 255 - im
             im_mask = 255 - np.repeat(none_white.astype(im.dtype) * 255, 3, axis=2)
 
-            print(im.shape, im_mask.shape)
             im_pair = np.concatenate( (im_mask, im), axis=1)
 
             #print('shp',original_img.shape)
@@ -77,7 +83,8 @@ def ext_plans():
             counter += 1
             filename = os.path.join(directory, 'item'+str(counter)+'.png')
             imageio.imwrite(filename,  im_pair )
-            #print('saved')
+            print(counter, end=' ')
+    print('saved')
 
     #pict_array2d = np.asarray(img)
     #pict_array2d = scipy.misc.imresize(pict_array2d, (200,200))
