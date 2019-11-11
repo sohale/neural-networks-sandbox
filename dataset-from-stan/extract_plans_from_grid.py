@@ -61,7 +61,7 @@ def ext_plans():
             im_mask = 255 - np.repeat(none_white.astype(im.dtype) * 255, 3, axis=2)
 
             print(im.shape, im_mask.shape)
-            im_pair = np.concatenate((im, im_mask) , axis=1)
+            im_pair = np.concatenate( (im_mask, im), axis=1)
 
             #print('shp',big_img.shape)
             #print('saving', im.shape)
