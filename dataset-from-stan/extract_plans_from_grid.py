@@ -45,8 +45,9 @@ def ext_plans():
 
             # top-left for each sub-picture
             lyy, lxx = (yy0+dyy*yyi), (xx0+dxx*xxi)
-            # Margin: 6,6,9,6
-            subsub_rect = (lyy, lyy+dyy, lxx, lxx+dxx)
+            # Reduce the White Margin: 6,6,9,6
+            cell_margin = (3.0, 6.0, 3.0, 3.0)  # Y0,Y1, X0,X1
+            subsub_rect = (lyy + cell_margin[Y0], lyy+dyy - cell_margin[Y1], lxx + cell_margin[X0], lxx+dxx - cell_margin[X1])
             #print('lyy,lxx', lyy,lxx)
             subpic_rect = math.floor(subsub_rect[Y0]), math.floor(subsub_rect[Y1]), math.floor(subsub_rect[X0]), math.floor(subsub_rect[X1])
             #print('subpic_rect', subpic_rect)
