@@ -12,13 +12,16 @@ def ext_plans():
     This function ...
     """
 
+    directory = './pix2pix-tensorflow/stan_training'
+    input_image_file = './set1.jpg'
+
+    os.makedirs(directory, exist_ok=True)
+
     # big_img = np.asarray(imageio.imread('./set1.jpg'))
-    big_img  = imageio.imread('./set1.jpg')
+    big_img  = imageio.imread(input_image_file)
     big_img = np.asarray(big_img)
     print(big_img.shape)  # (682, 1000, 3)
     nx, ny = 17,25 # 25, 17
-    #x0,y0, mx,my = 10,10, 5,5
-    #x0,y0, mx,my = 31,36, 969,644
     x0,y0, mx,my = 36,31, 682-644, 1000-969
 
     w,h = big_img.shape[0], big_img.shape[1]
@@ -66,7 +69,7 @@ def ext_plans():
             # dataset.append(im)
             #filename = os.path.join('output','p'+str(xi)+'-'+str(yi)+'.png')
             counter += 1
-            filename = os.path.join('./pix2pix-tensorflow/stan_training','item'+str(counter)+'.png')
+            filename = os.path.join(directory, 'item'+str(counter)+'.png')
             imageio.imwrite(filename,  im_pair )
             #print('saved')
 
@@ -89,6 +92,8 @@ conda install scipy
 conda install -c menpo imageio
 pip install tensorflow==1.15.0
 
+
+
 # First time only:
 # From git
 git clone git@github.com:sosi-org/neural-networks-sandbox.git
@@ -100,4 +105,21 @@ cd pix2pix-tensorflow
 # Starts training
 python pix2pix.py  --mode train --output_dir stan_out   --input_dir stan_training
 # Wait...
+
+MacOS:
+Installation on MacOS: (First time only)
+    * virtualenv --version # If error, install virsualenv . see https://www.tensorflow.org/install/pip
+    * cd dataset-from-stan
+    * virtualenv -v --python=python3  ./tensorf
+    * pip install tensorflow==1.15.0
+    * pip install scipy
+    * pip install imageio
+    
+    Unsure: cython PyHamcrest
+
+Run on MacOS
+    * cd dataset-from-stan
+    * source ./tensorf/bin/activate
+    * python extract_plans_from_grid.py
+
 """
