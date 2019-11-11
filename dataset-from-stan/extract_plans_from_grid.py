@@ -17,32 +17,34 @@ def ext_plans():
 
     os.makedirs(directory, exist_ok=True)
 
-    # big_img = np.asarray(imageio.imread('./set1.jpg'))
-    big_img  = imageio.imread(input_image_file)
-    big_img = np.asarray(big_img)
-    print(big_img.shape)  # (682, 1000, 3)
-    nx, ny = 17,25 # 25, 17
-    # corners
-    x0,y0, mx,my = 36,31, 682-644, 1000-969
+    # original_img = np.asarray(imageio.imread('./set1.jpg'))
+    original_img  = imageio.imread(input_image_file)
+    original_img = np.asarray(original_img)
+    print(original_img.shape)  # (682, 1000, 3)
 
-    w,h = big_img.shape[0], big_img.shape[1]
-    box_main = (x0,y0, w-mx, h-my)
+    nyy, nxx = 17,25 # 25, 17
+    # corners
+    yy0,xx0, myy,mxx = 36,31, 38, 31
+
+    box_main = (yy0,xx0, original_img.shape[0]-myy, original_img.shape[1]-mxx)
     print('box_main', box_main)
 
-    dx,dy = (box_main[2]-box_main[0])/nx, (box_main[3]-box_main[1])/ny
-    print('dx,dy', dx,dy)
+    dyy,dxx = (box_main[2]-box_main[0])/nyy, (box_main[3]-box_main[1])/nxx
+    print('dyy,dxx', dyy,dxx)
 
 
     # dataset = []
     counter = 0
-    for xi in range(3,nx): #range(3): #(nx):
-        for yi in range(ny): #range(3): #(ny):
-            lx, ly = (x0+dx*xi), (y0+dy*yi)
-            #print('lx,ly', lx,ly)
-            rect = math.floor(lx), math.floor(lx+dx), math.floor(ly), math.floor(ly+dy)
-            #print('rect', rect)
-            im = big_img[rect[0]:rect[1], rect[2]:rect[3], :]
-            # im = big_img[10:49,49:88,:]
+    for yyi in range(3,nyy): #range(3): #(nyy):
+        for xxi in range(nxx): #range(3): #(nxx):
+
+            # top-left for each sub-picture
+            lyy, lxx = (yy0+dyy*yyi), (xx0+dxx*xxi)
+            #print('lyy,lxx', lyy,lxx)
+            subpic_rect = math.floor(lyy), math.floor(lyy+dyy), math.floor(lxx), math.floor(lxx+dxx)
+            #print('subpic_rect', subpic_rect)
+            im = original_img[subpic_rect[0]:subpic_rect[1], subpic_rect[2]:subpic_rect[3], :]
+            # im = original_img[10:49,49:88,:]
 
             """
             im_grey = np.mean(im,axis=2)[:,:,None]
@@ -67,11 +69,11 @@ def ext_plans():
             print(im.shape, im_mask.shape)
             im_pair = np.concatenate( (im_mask, im), axis=1)
 
-            #print('shp',big_img.shape)
+            #print('shp',original_img.shape)
             #print('saving', im.shape)
 
             # dataset.append(im)
-            #filename = os.path.join('output','p'+str(xi)+'-'+str(yi)+'.png')
+            #filename = os.path.join('output','p'+str(yyi)+'-'+str(xxi)+'.png')
             counter += 1
             filename = os.path.join(directory, 'item'+str(counter)+'.png')
             imageio.imwrite(filename,  im_pair )
