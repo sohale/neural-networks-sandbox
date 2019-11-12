@@ -66,7 +66,7 @@ def load_main_images(img, label):
     return arts
 
 
-def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SIZE):
+def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SIZE, RGB_CHANNELS):
     # Select random parts of the main 4 artworks
     #return main_artworks_list
     batch = []
@@ -76,8 +76,8 @@ def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SI
         image = main_artworks_list[ii]
 
         image = image.copy()
-        #S, V0 = 2.0 / 255.0 * 0.9,  -1.0 * 0.9
-        S, V0 = 1.0 / 255.0 * 0.9,  0.0 * 0.9
+        #S, V0 = 1.0 / 255.0 * 0.9,  0.0 * 0.9
+        S, V0 = 1.0 / 255.0 * 0.9,  0.0
         image = image * S + V0
         image[0] = 0.0  # -0.98
 
@@ -94,5 +94,7 @@ def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SI
         if (p0>0): print('<0.0', p0)
         print(FLATTENED_SIZE, img.shape)
         assert (FLATTENED_SIZE,) == img.shape
+        print(img.shape)
+    print('batch size', len(batch))
 
     return batch

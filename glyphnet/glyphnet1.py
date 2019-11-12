@@ -15,6 +15,7 @@ choose_random_batch = image_loader.choose_random_batch
 from geo_maker import geometry_maker #import simple_triangles
 simple_triangles = geometry_maker.simple_triangles
 
+RGB_CHANNELS = 3
 class SessionSaver:
     def __init__(self, sess, RESET_FRESH):
         # self.session_saver_init(sess, RESET_FRESH)
@@ -46,13 +47,13 @@ img, label, RESET_FRESH = loadmnist_from_args()
 
 # IMPORTANT DESIGN CHOICE
 # 7, 14, 20, 28, 200
-RGB_SIZE = (14,14, 3)
+RGB_SIZE = (14,14, RGB_CHANNELS)
 
 FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
 
 
 # img, label, RESET_FRESH = simple_traiangles()
-main_artworks = simple_triangles(FLATTENED_SIZE)
+main_artworks = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS)
 
 
 PColor.init()
@@ -135,7 +136,7 @@ for step in range(5000*1000): #(500*1000):
 
     #if True or step == 0:
     if step == 0:
-        artist_paintings_list = choose_random_batch(main_artworks, 64, FLATTENED_SIZE)           # real painting from artist (15)
+        artist_paintings_list = choose_random_batch(main_artworks, 64, FLATTENED_SIZE, RGB_CHANNELS)           # real painting from artist (15)
 
         actual_batchsize = len(artist_paintings_list)
         #print('££', len(artist_paintings_list), (artist_paintings_list[0].shape))

@@ -7,8 +7,9 @@ notes.md
 MacOS:
 Installation on MacOS: (First time only)
     * virtualenv --version # If error, install virsualenv . see https://www.tensorflow.org/install/pip
-    * cd dataset-from-stan
-    * virtualenv -v --python=python3  ./tensorf
+    * cd glyphnet
+    * virtualenv -v --python=python3  ./tensorf1
+    * source ./tensorf1/bin/activate
     * pip install tensorflow==1.15.0
     * pip install scipy
     * pip install imageio
@@ -18,10 +19,8 @@ Installation on MacOS: (First time only)
     Unsure: cython PyHamcrest
 
 Run on MacOS
-    * cd dataset-from-stan
-    * source ./tensorf/bin/activate
-    * cd ..
-
+    * cd glyphnet
+    * source ./tensorf1/bin/activate
     * python glyphnet1.py
 
 
