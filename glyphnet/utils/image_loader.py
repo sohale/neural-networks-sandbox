@@ -66,10 +66,18 @@ def load_main_images(img, label):
     return arts
 
 
-def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SIZE, RGB_CHANNELS):
+def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SIZE, RGB_CHANNELS, avoid_resampling):
     # Select random parts of the main 4 artworks
     #return main_artworks_list
     batch = []
+    if avoid_resampling:
+        for i in range(batch_size_provisional):
+            ii = np.random.randint(0,len(main_artworks_list))
+            image = main_artworks_list[ii]
+            assert (FLATTENED_SIZE,) == image.shape
+            batch.append( image )
+        return batch
+
     for i in range(batch_size_provisional):
         ii = np.random.randint(0,len(main_artworks_list))
 
