@@ -22,6 +22,7 @@ import numpy as np
 import numpy as np
 from skimage.draw import line_aa
 
+""" Pixel range: [0,255]  Size: WxH=size_shape """
 def simple_triangles(size_shape, RGB_CHANNELS):
     W,H = 14,14
     those = []
@@ -32,7 +33,7 @@ def simple_triangles(size_shape, RGB_CHANNELS):
         rr, cc, val = line_aa(0, 13, 13, 4)
         img[rr, cc] = val * 255
 
-        rgbi = i % 3
+        rgbi = i % RGB_CHANNELS
 
         #rr, cc, val = line_aa(0+i, 13-i, 13-i, 4)
         #img[rr, cc] = val * 255
@@ -40,6 +41,9 @@ def simple_triangles(size_shape, RGB_CHANNELS):
         # scipy.misc.imsave("out.png", img)
         img_rgb = np.repeat(img[:,:, None], RGB_CHANNELS, axis=2)
         img_rgb[:,:,rgbi] = 0
+
+        """ Check sizes """
+        assert np.prod(img_rgb[:,:,0].shape) == size_shape
 
         those.append(img_rgb.flatten())
     return those

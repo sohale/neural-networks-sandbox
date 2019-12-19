@@ -161,8 +161,8 @@ for step in range(5000*1000): #(500*1000):
         G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
         print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
         print(images_training_batch[0,:])
-        PColor.plot_show_image(G_paintings2d, str(step), 0.1, [pa0.mean(), -Dl])
-        # PColor.plot_show_image(images_training_batch[0,:].reshape(RGB_SIZE), None, 4.5, [0,0])
+        PColor.plot_show_image(G_paintings2d, 'foo-' + str(step), 0.1, [pa0.mean(), -Dl])
+        PColor.plot_show_image(images_training_batch[0,:].reshape(RGB_SIZE), 'train-' +str(step), 4.5, [0,0])
 
         session_saver.tick(sess)
 

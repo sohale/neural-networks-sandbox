@@ -64,16 +64,17 @@ class PColor:
 
         PColor.next_plot(sleep_sec)
 
-        if(False and file_id is not None):
-            save( os.path.join(output_directory, 'foo-' + file_id + '.png') )
+        if(file_id is not None):
+            PColor.save( os.path.join(output_directory, file_id + '.png') )
 
     @staticmethod
-    def save(filename, wait_time_sec):
-        # plt.draw()
+    def save(filename):
+        plt.draw()
         plt.savefig( filename )
         print("saved")
         if is_mac():
-            time.sleep(0.1)
+            wait_time_sec = 0.1
+            time.sleep(wait_time_sec)
 
     """ Next plot. Platform-independent """
     @staticmethod
@@ -86,9 +87,15 @@ class PColor:
             plt.draw()
             time.sleep(sleep_sec)
         elif is_linux():
-            """ "Modal" """
-            plt.show()
+            # """ "Modal" """
+            # plt.show()
 
+
+            #plt.draw()
+            #plt.show(block=False)
+            #time.sleep(0.5)
+            #plt.draw()
+            """
             # futile:
             plt.ion()
             plt.draw()
@@ -99,6 +106,7 @@ class PColor:
             time.sleep(2.0)
             plt.close()
             plt.ioff()
+            """
         else:
             raise
 
@@ -110,9 +118,14 @@ class PColor:
         #plt.imshow(main_artworks[0])
 
         if is_linux():
-            plt.ioff()  # not necessary
+            # plt.ioff()  # not necessary
+            # plt.show()
+
             #plt.ion()
-            plt.show()
+            plt.draw()
+            plt.show(block=False)
+            plt.draw()
+            time.sleep(0.5)
             return
         elif is_mac():
             plt.draw()
