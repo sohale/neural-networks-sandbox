@@ -15,7 +15,6 @@ choose_random_batch = image_loader.choose_random_batch
 from geo_maker import geometry_maker #import simple_triangles
 simple_triangles = geometry_maker.simple_triangles
 
-RGB_CHANNELS = 1
 class SessionSaver:
     def __init__(self, sess, RESET_FRESH):
         # self.session_saver_init(sess, RESET_FRESH)
@@ -44,41 +43,77 @@ img, label, RESET_FRESH = loadmnist_from_args()
 """
 
 
+exper_params = {
+    'data_samples': 1000,
+    'seed1': 1,
+    'seed2': 1,
+    'train_iters': 5000*1000,  # (500*1000)
+}
+
+hyperparams = {
+    'w': 14,
+    'h': 14,
+    'rgb_channels': 1,
+    'batch_size': 64*5,  # 64
+
+    'LearningRate_Gn': 0.0001, # 0.001
+    'LearningRate_Dc': 0.0001, # 0.001
+
+    'Gn_input_distr': 'randu',  # 'randn'
+
+    'Gn_inputs': 3,  # 3,5,15
+    'layers': [None, 128, None],
+
+    'eps':  +1e-30,
+
+    'input_dtype': tf.float32,
+
+
+}
+
+RGB_CHANNELS = hyperparams['rgb_channels']
 
 # IMPORTANT DESIGN CHOICE
 # 7, 14, 20, 28, 200
-RGB_SIZE = (14,14, RGB_CHANNELS)
+RGB_SIZE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
 
 FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
 
-# BATCHSIZE_PROV = 64
-BATCHSIZE_PROV = 64
+BATCHSIZE_PROV = hyperparams['batch_size']
 
-HOW_MANY_SAMPLES_SYNTHESIZED = 1000
+HOW_MANY_SAMPLES_SYNTHESIZED = exper_params['data_samples']
 # img, label, RESET_FRESH = simple_traiangles()
-main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, HOW_MANY_SAMPLES_SYNTHESIZED)
+main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SIZE[0],RGB_SIZE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
 print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
+
+
+def rand_generator(rows, cols):
+    if hyperparams['Gn_input_distr'] == 'randn':
+        return np.random.randn(rows, cols)
+    if hyperparams['Gn_input_distr'] == 'randu':
+        return np.random.rand(rows, cols)
+    else:
+        raise Error('unknown')
 
 PColor.init()
 
-tf.set_random_seed(1)
-np.random.seed(1)
+tf.set_random_seed(exper_params['seed1'])
+np.random.seed(exper_params['seed2'])
 
 # Hyper Parameters
 #  IMPORTANT DESIGN CHOICES
 
-LearningRate_Gn = 0.0001          # learning rate for generator
-#LearningRate_Gn = 0.001            # learning rate for generator
-LearningRate_Dc = 0.0001           # learning rate for discriminator
-#LearningRate_Dc = 0.001           # learning rate for discriminator
-# 3,5,15
-N_GEN_RANDINPUTS = 3
+LearningRate_Gn = hyperparams['LearningRate_Gn']          # learning rate for generator
+LearningRate_Dc = hyperparams['LearningRate_Dc']           # learning rate for discriminator
+N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
 
+
+L1 = hyperparams['layers'][1]
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
-    Gn_input_layer = tf.placeholder(tf.float32, [None, N_GEN_RANDINPUTS])          # (from normal distribution)
-    Gn_hidden_layer = tf.layers.dense(Gn_input_layer, 128, tf.nn.relu)
+    Gn_input_layer = tf.placeholder(hyperparams['input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
+    Gn_hidden_layer = tf.layers.dense(Gn_input_layer, L1, tf.nn.relu)
     #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
     print("FLATTENED_SIZE", FLATTENED_SIZE)
     Gn_output_layer = tf.layers.dense(Gn_hidden_layer, FLATTENED_SIZE)
@@ -87,23 +122,24 @@ with tf.variable_scope('Gn'):
     print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
 with tf.variable_scope('Dc'):
-    real_input = tf.placeholder(tf.float32, [None,FLATTENED_SIZE], name='real_in')
-    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, 128, tf.nn.relu, name='l')
+    real_input = tf.placeholder(hyperparams['input_dtype'], [None,FLATTENED_SIZE], name='real_in')
+    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, L1, tf.nn.relu, name='l')
 
-    #print('Discr_hiddenlayer_realinput', Discr_hiddenlayer_realinput)  #shape=(?, 20, 20, 128)
+    #print('Discr_hiddenlayer_realinput', Discr_hiddenlayer_realinput)  #shape=(?, 20, 20, L1)
     #  WHERE is 3???
     Discr_out_realinput = tf.layers.dense(Discr_hiddenlayer_realinput, 1, tf.nn.sigmoid, name='out')              # probability that the art is real
     #print('*Discr_out_realinput', Discr_out_realinput)  # shape=(?, 20, 20, 1)
 
     # reuse layers for generator
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, 128, tf.nn.relu, name='l', reuse=True)
-    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, 128, tf.nn.relu, name='l', reuse=True)
+    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, L1, tf.nn.relu, name='l', reuse=True)
+    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, L1, tf.nn.relu, name='l', reuse=True)
     #print('*Discr_hiddenlayer_fakeinput', Discr_hiddenlayer_fakeinput)
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, 128, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
+    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, L1, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
 
     Discr_out_fakeinput = tf.layers.dense(Discr_hiddenlayer_fakeinput, 1, tf.nn.sigmoid, name='out', reuse=True)  # probability that the art work is made by artist
 
-EPS =  +1e-30
+
+EPS = hyperparams['eps']
 D_loss = - tf.reduce_mean(tf.log(Discr_out_realinput + EPS) + tf.log(1-Discr_out_fakeinput + EPS))
 G_loss =   tf.reduce_mean(                                    tf.log(1-Discr_out_fakeinput + EPS))
 
@@ -134,8 +170,7 @@ sess.run(init_op)
 RESET_FRESH = True
 session_saver = SessionSaver(sess, RESET_FRESH)
 
-
-for step in range(5000*1000): #(500*1000):
+for step in range(exper_params['train_iters']):
 
     #if True or step == 0:
     if step == 0:
@@ -152,7 +187,7 @@ for step in range(5000*1000): #(500*1000):
         assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
 
 
-    G_randinput = np.random.rand(actual_batchsize, N_GEN_RANDINPUTS)
+    G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([Gn_output_layer, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
                                     {Gn_input_layer: G_randinput, real_input: images_training_batch})[:3]

@@ -67,8 +67,8 @@ test()
 # exit()
 
 """ Pixel range: [0,255]  Size: WxH=size_shape """
-def simple_triangles(size_shape, RGB_CHANNELS, how_many_samples=10):
-    W,H = 14,14
+def simple_triangles(size_shape, RGB_CHANNELS, size_WH, how_many_samples=10):
+    W,H = size_WH
     those = []
     for i in range(how_many_samples):
         # img_rgb = np.zeros((W,H,RGB_CHANNELS), dtype=np.uint8)
