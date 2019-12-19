@@ -53,7 +53,7 @@ FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
 
 
 # img, label, RESET_FRESH = simple_traiangles()
-main_artworks = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS)
+main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS)
 
 
 PColor.init()
@@ -74,14 +74,14 @@ N_GEN_RANDINPUTS = 15
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
-    G_in = tf.placeholder(tf.float32, [None, N_GEN_RANDINPUTS])          # random ideas (could from normal distribution)
-    G_l1 = tf.layers.dense(G_in, 128, tf.nn.relu)
-    #G_output = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
+    Gn_input_layer = tf.placeholder(tf.float32, [None, N_GEN_RANDINPUTS])          # random ideas (could from normal distribution)
+    Gn_hidden_layer = tf.layers.dense(Gn_input_layer, 128, tf.nn.relu)
+    #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
     print("FLATTENED_SIZE", FLATTENED_SIZE)
-    G_output = tf.layers.dense(G_l1, FLATTENED_SIZE)
+    Gn_output_layer = tf.layers.dense(Gn_hidden_layer, FLATTENED_SIZE)
 
-    #G_output = tf.reshape(G_out1d, [] + list(SIZE_PIXELS))
-    print('G_output', G_output)  #shape=(?, 20, 20, 3)
+    #Gn_output_layer = tf.reshape(G_out1d, [] + list(SIZE_PIXELS))
+    print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
 with tf.variable_scope('Discriminator'):
     real_input = tf.placeholder(tf.float32, [None,FLATTENED_SIZE], name='real_in')
@@ -94,9 +94,9 @@ with tf.variable_scope('Discriminator'):
 
     # reuse layers for generator
     #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, 128, tf.nn.relu, name='l', reuse=True)
-    Discr_hiddenlayer_fakeinput = tf.layers.dense(G_output, 128, tf.nn.relu, name='l', reuse=True)
+    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, 128, tf.nn.relu, name='l', reuse=True)
     #print('*Discr_hiddenlayer_fakeinput', Discr_hiddenlayer_fakeinput)
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_output, 128, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
+    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, 128, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
 
     Discr_out_fakeinput = tf.layers.dense(Discr_hiddenlayer_fakeinput, 1, tf.nn.sigmoid, name='out', reuse=True)  # probability that the art work is made by artist
 
@@ -136,7 +136,7 @@ for step in range(5000*1000): #(500*1000):
 
     #if True or step == 0:
     if step == 0:
-        images_batch__list = choose_random_batch(main_artworks, 64, FLATTENED_SIZE, RGB_CHANNELS)           # real painting from artist (15)
+        images_batch__list = choose_random_batch(main_dataset, 64, FLATTENED_SIZE, RGB_CHANNELS)           # real painting from artist (15)
 
         actual_batchsize = len(images_batch__list)
         #print('££', len(images_batch__list), (images_batch__list[0].shape))
@@ -151,8 +151,8 @@ for step in range(5000*1000): #(500*1000):
 
     G_randinput = np.random.randn(actual_batchsize, N_GEN_RANDINPUTS)
 
-    G_paintings, pa0, Dl = sess.run([G_output, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    {G_in: G_randinput, real_input: images_training_batch})[:3]
+    G_paintings, pa0, Dl = sess.run([Gn_output_layer, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
+                                    {Gn_input_layer: G_randinput, real_input: images_training_batch})[:3]
 
     if step % (2500) == 0:  # plotting
 
