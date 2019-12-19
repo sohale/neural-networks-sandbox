@@ -15,7 +15,7 @@ choose_random_batch = image_loader.choose_random_batch
 from geo_maker import geometry_maker #import simple_triangles
 simple_triangles = geometry_maker.simple_triangles
 
-RGB_CHANNELS = 3
+RGB_CHANNELS = 1
 class SessionSaver:
     def __init__(self, sess, RESET_FRESH):
         # self.session_saver_init(sess, RESET_FRESH)
@@ -74,7 +74,7 @@ N_GEN_RANDINPUTS = 15
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
-    Gn_input_layer = tf.placeholder(tf.float32, [None, N_GEN_RANDINPUTS])          # random ideas (could from normal distribution)
+    Gn_input_layer = tf.placeholder(tf.float32, [None, N_GEN_RANDINPUTS])          # (from normal distribution)
     Gn_hidden_layer = tf.layers.dense(Gn_input_layer, 128, tf.nn.relu)
     #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
     print("FLATTENED_SIZE", FLATTENED_SIZE)

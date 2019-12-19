@@ -76,8 +76,11 @@ def choose_random_batch(main_artworks_list, batch_size_provisional, FLATTENED_SI
         image = main_artworks_list[ii]
 
         image = image.copy()
-        #S, V0 = 1.0 / 255.0 * 0.9,  0.0 * 0.9
-        S, V0 = 1.0 / 255.0 * 0.9,  0.0
+
+        #MAX_VAL = 0.9
+        MAX_VAL = 1.0
+        #S, V0 = 1.0 / 255.0 * MAX_VAL,  0.0 * 0.9
+        S, V0 = 1.0 / 255.0 * MAX_VAL,  0.0
         image = image * S + V0
         image[0] = 0.0  # -0.98
 

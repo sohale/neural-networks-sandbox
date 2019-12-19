@@ -51,8 +51,24 @@ class PColor:
         #img_pix_rescale = (G_paintings2d * 0.05 + 0.5)
         #img_pix_rescale = (G_paintings2d)
         #plt.imshow(img_pix_rescale, vmin=-100, vmax=100)
-        img_pix_rescale = ((G_paintings2d) / 80.0 *40  ) +0.5
-        plt.imshow((img_pix_rescale *128).astype(np.uint8))
+        #img_pix_rescale = ((G_paintings2d) / 80.0 *40  ) +0.5
+        #img_pix_rescale = ((G_paintings2d) / 2.0  ) +0.5
+        img_pix_rescale = G_paintings2d
+        print('img_pix_rescale.shape', img_pix_rescale.shape)
+        RGB3D = 3
+        assert len(img_pix_rescale.shape) == RGB3D
+        if img_pix_rescale.shape[2] < RGB3D:
+            img_pix_rescale = np.max(img_pix_rescale, axis=2)
+            img_pix_rescale = img_pix_rescale[:,:,None]
+            img_pix_rescale = np.repeat(img_pix_rescale, RGB3D, axis=2)
+        if img_pix_rescale.shape[2] > RGB3D:
+            img_pix_rescale = img_pix_rescale[:,:,:RGB3D]
+
+        #scaled_back_to_255 = img_pix_rescale * 128
+        #scaled_back_to_255 = ((img_pix_rescale / 2.0)+0.5) * 128
+        scaled_back_to_255 = img_pix_rescale * 127.0 + 128
+        scaled_back_to_255[scaled_back_to_255 > 255] = 255
+        plt.imshow(scaled_back_to_255.astype(np.uint8))
         print('min max:', np.min(img_pix_rescale.ravel()), np.max(img_pix_rescale.ravel()))
         #plt.pcolor(np.mean(G_paintings2d, axis=2))
         print("@*")

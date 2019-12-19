@@ -40,7 +40,8 @@ def simple_triangles(size_shape, RGB_CHANNELS):
 
         # scipy.misc.imsave("out.png", img)
         img_rgb = np.repeat(img[:,:, None], RGB_CHANNELS, axis=2)
-        img_rgb[:,:,rgbi] = 0
+        #if RGB_CHANNELS > 1:
+        #    img_rgb[:,:,rgbi] = 0
 
         """ Check sizes """
         assert np.prod(img_rgb[:,:,0].shape) == size_shape
