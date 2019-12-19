@@ -75,7 +75,7 @@ class PColor:
         acc, score = more_info
         plt.text(-.5, 0, 'D accuracy=%.2f (0.5 for D to converge)' % acc, fontdict={'size': 15})
         plt.text(-.5, G_paintings2d.shape[1]*0.5, 'D score= %.2f (-1.38 for G to converge)' % score, fontdict={'size': 15})
-        plt.colorbar()
+        # plt.colorbar()
 
 
         PColor.next_plot(sleep_sec)
