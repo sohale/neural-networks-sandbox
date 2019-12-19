@@ -34,13 +34,20 @@ def simple_triangles(size_shape, RGB_CHANNELS, how_many_samples=10):
 
         # img = np.zeros((W, H), dtype=np.uint8)
         # img = np.zeros((W, H), dtype=float)
-        rr, cc, val = line_aa(1, 1, 8, 4)
-        img_rgb[rr, cc, rgbi] = val * 255
-        rr, cc, val = line_aa(0, 13, 13, 4)
-        img_rgb[rr, cc, rgbi] = val * 255
+        if False:
+            rr, cc, val = line_aa(1, 1, 8, 4)
+            img_rgb[rr, cc, rgbi] = val * 255
+            rr, cc, val = line_aa(0, 13, 13, 4)
+            img_rgb[rr, cc, rgbi] = val * 255
 
-        rr, cc, val = line_aa((0+i)%W, (13-i)%H, (13-i)%W, 4 % H)
-        img_rgb[rr, cc, rgbi] += val * 255
+            rr, cc, val = line_aa((0+i)%W, (13-i)%H, (13-i)%W, 4 % H)
+            img_rgb[rr, cc, rgbi] += val * 255
+
+        #x1,y1 = on_border(np.random.rand()*4.0)
+        #x2,y2 = on_border(np.random.rand()*4.0)
+        x1,y1, x2,y2 = (0+i)%W, (13-i)%H, (13-i)%W, 4
+        rr, cc, val = line_aa(x1%W, y1%H, x2%W, y2 % H)
+        img_rgb[rr, cc, rgbi] = np.maximum(img_rgb[rr, cc, rgbi], val * 255)
 
         img_rgb[img_rgb>255.0] = 255.0
         # img_rgb = img_rgb / 2.0
@@ -56,7 +63,7 @@ def simple_triangles(size_shape, RGB_CHANNELS, how_many_samples=10):
         assert np.prod(img_rgb[:,:,0].shape) == size_shape
 
         f = img_rgb.flatten().astype(float) / 255.0
-        print('max:', np.max(f))
+        # print('max:', np.max(f))
         those.append(f)
     return those
 
