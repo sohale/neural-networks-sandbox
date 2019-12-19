@@ -96,8 +96,8 @@ def simple_triangles(size_shape, RGB_CHANNELS, size_WH, how_many_samples=10):
                 c1 = np.random.rand()
                 c2 = np.random.rand()
                 # 0.5/4, 1.5/4
-                c1 = c1 * 0.5 / 4.0
-                c2 = c2 * 1.5 / 4.0
+                c1 = (c1 * 0.5) / 4.0
+                c2 = (2 + c2 * 0.5) / 4.0
                 # d = np.fabs(c1 - c2)
                 side1 = int(c1*4) % 4
                 side2 = int(c2*4) % 4
