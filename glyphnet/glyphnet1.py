@@ -84,8 +84,8 @@ with tf.variable_scope('Gn'):
     print('G_output', G_output)  #shape=(?, 20, 20, 3)
 
 with tf.variable_scope('Discriminator'):
-    real_art = tf.placeholder(tf.float32, [None,FLATTENED_SIZE], name='real_in')
-    Discr_hiddenlayer_realinput = tf.layers.dense(real_art, 128, tf.nn.relu, name='l')
+    real_input = tf.placeholder(tf.float32, [None,FLATTENED_SIZE], name='real_in')
+    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, 128, tf.nn.relu, name='l')
 
     #print('Discr_hiddenlayer_realinput', Discr_hiddenlayer_realinput)  #shape=(?, 20, 20, 128)
     #  WHERE is 3???
@@ -152,15 +152,16 @@ for step in range(5000*1000): #(500*1000):
     G_randinput = np.random.randn(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([G_output, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    {G_in: G_randinput, real_art: artist_paintings})[:3]
+                                    {G_in: G_randinput, real_input: artist_paintings})[:3]
 
     if step % (2500) == 0:  # plotting
 
         print("step:", step,   "  last batchsize=", actual_batchsize, "  time (Sec):", time.time()-start_time)
         # for visualisation only:
         G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
-        PColor.plot_show_image(G_paintings2d, str(step), pa0, Dl)
-        #plot_show_image(artist_paintings[0,:].reshape(RGB_SIZE), step)
+        print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
+        PColor.plot_show_image(G_paintings2d, str(step), 0.1, [pa0.mean(), -Dl])
+        # PColor.plot_show_image(artist_paintings[0,:].reshape(RGB_SIZE), None, 4.5, [0,0])
 
         session_saver.tick(sess)
 
