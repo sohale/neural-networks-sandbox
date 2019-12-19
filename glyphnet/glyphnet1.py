@@ -15,7 +15,7 @@ choose_random_batch = image_loader.choose_random_batch
 from geo_maker import geometry_maker #import simple_triangles
 simple_triangles = geometry_maker.simple_triangles
 
-RGB_CHANNELS = 1
+RGB_CHANNELS = 3
 class SessionSaver:
     def __init__(self, sess, RESET_FRESH):
         # self.session_saver_init(sess, RESET_FRESH)
