@@ -63,6 +63,7 @@ class PColor:
         plt.colorbar()
 
 
+        #next()
         if is_mac():
             print('draw')
             import sys
@@ -72,7 +73,19 @@ class PColor:
             #time.sleep(0.1)
             time.sleep(sleep_sec)
         elif is_linux():
+            """ "Modal" """
             plt.show()
+
+            # futile:
+            plt.ion()
+            plt.draw()
+            plt.show()
+            plt.ioff()
+
+            time.sleep(sleep_sec)
+            time.sleep(2.0)
+            plt.close()
+            plt.ioff()
         else:
             raise
 
@@ -85,6 +98,10 @@ class PColor:
 
 
     @staticmethod
+    def next():
+        pass
+
+    @staticmethod
     def init():
         print('matplotlib init.')
         plt.cla()
@@ -92,6 +109,7 @@ class PColor:
 
         if is_linux():
             plt.ioff()  # not necessary
+            #plt.ion()
             plt.show()
             return
         elif is_mac():
