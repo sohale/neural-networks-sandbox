@@ -63,3 +63,20 @@ morvanzhou:
 https://morvanzhou.github.io/tutorials/
 https://www.youtube.com/user/MorvanZhou
 
+
+
+
+
+linux preparation (ubuntu 16)
+virtualenv -v --python=python3  ./tensorf2
+pip install tensorflow
+(failed)
+
+virtualenv -v --python=python3  ./tensorf1
+pip install tensorflow==1.15.0
+
+
+pip install scipy
+pip install imageio
+pip install matplotlib
+pip install scikit-image
