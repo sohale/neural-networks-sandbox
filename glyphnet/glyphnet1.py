@@ -33,7 +33,7 @@ class SessionSaver:
             print("Loading previous training session.")
 
         if not RESET_FRESH:
-            sself.saver.restore(sess, self.SAVED_SESSION_FILENAME)
+            self.saver.restore(sess, self.SAVED_SESSION_FILENAME)
 
     def tick(self, sess):
         self.save_path = self.saver.save(sess, self.SAVED_SESSION_FILENAME)
@@ -51,11 +51,13 @@ RGB_SIZE = (14,14, RGB_CHANNELS)
 
 FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
 
+# BATCHSIZE_PROV = 64
+BATCHSIZE_PROV = 64
 
-HOW_MANY_SAMPLES_SYNTHESIZED = 100
+HOW_MANY_SAMPLES_SYNTHESIZED = 1000
 # img, label, RESET_FRESH = simple_traiangles()
 main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, HOW_MANY_SAMPLES_SYNTHESIZED)
-
+print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
 
 PColor.init()
 
@@ -65,10 +67,10 @@ np.random.seed(1)
 # Hyper Parameters
 #  IMPORTANT DESIGN CHOICES
 
-#LearningRate_Gn = 0.0001          # learning rate for generator
-LearningRate_Gn = 0.001            # learning rate for generator
-#LearningRate_Dc = 0.0001           # learning rate for discriminator
-LearningRate_Dc = 0.001           # learning rate for discriminator
+LearningRate_Gn = 0.0001          # learning rate for generator
+#LearningRate_Gn = 0.001            # learning rate for generator
+LearningRate_Dc = 0.0001           # learning rate for discriminator
+#LearningRate_Dc = 0.001           # learning rate for discriminator
 # 3,5,15
 N_GEN_RANDINPUTS = 3
 
@@ -137,7 +139,7 @@ for step in range(5000*1000): #(500*1000):
 
     #if True or step == 0:
     if step == 0:
-        images_batch__list = choose_random_batch(main_dataset, 64, FLATTENED_SIZE, RGB_CHANNELS, True)
+        images_batch__list = choose_random_batch(main_dataset, BATCHSIZE_PROV, FLATTENED_SIZE, RGB_CHANNELS, True)
 
         actual_batchsize = len(images_batch__list)
         #print('££', len(images_batch__list), (images_batch__list[0].shape))
@@ -150,7 +152,7 @@ for step in range(5000*1000): #(500*1000):
         assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
 
 
-    G_randinput = np.random.randn(actual_batchsize, N_GEN_RANDINPUTS)
+    G_randinput = np.random.rand(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([Gn_output_layer, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
                                     {Gn_input_layer: G_randinput, real_input: images_training_batch})[:3]

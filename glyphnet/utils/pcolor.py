@@ -43,6 +43,16 @@ class PColor:
     def plot_show_image(G_paintings2d, file_id, sleep_sec, more_info):
         plt.clf()
 
+        import matplotlib
+        matplotlib.rc('axes', edgecolor='white')
+        matplotlib.rc('axes', facecolor='black')
+
+        ax = plt.gca()
+        ax.set_facecolor((0.0, 0.0, 0.0))
+        #print(dir(ax))
+        #exit()
+        #ax.set_edgecolor((1.0, 1.0, 1.0))
+
         #print(np.max(np.max(G_paintings2d,axis=2), axis=0))
         #print(np.min(np.min(G_paintings2d,axis=2), axis=1))
         #print(G_paintings2d.shape)
@@ -129,6 +139,8 @@ class PColor:
     @staticmethod
     def init():
         linux_plot_issue()
+
+
         print('matplotlib init.')
         plt.cla()
         #plt.imshow(main_artworks[0])
