@@ -33,7 +33,6 @@ def linux_plot_issue():
         print('backend:', matplotlib.get_backend())
         # matplotlib.hold(true) # deprecated
 
-linux_plot_issue()
 
 output_directory = './generated'
 os.makedirs(output_directory, exist_ok=True)
@@ -63,14 +62,28 @@ class PColor:
         plt.colorbar()
 
 
-        #next()
+        PColor.next_plot(sleep_sec)
+
+        if(False and file_id is not None):
+            save( os.path.join(output_directory, 'foo-' + file_id + '.png') )
+
+    @staticmethod
+    def save(filename, wait_time_sec):
+        # plt.draw()
+        plt.savefig( filename )
+        print("saved")
+        if is_mac():
+            time.sleep(0.1)
+
+    """ Next plot. Platform-independent """
+    @staticmethod
+    def next_plot(sleep_sec):
         if is_mac():
             print('draw')
             import sys
             sys.stdout.flush()
 
             plt.draw()
-            #time.sleep(0.1)
             time.sleep(sleep_sec)
         elif is_linux():
             """ "Modal" """
@@ -89,20 +102,9 @@ class PColor:
         else:
             raise
 
-        if(False and file_id is not None):
-            # plt.draw()
-            plt.savefig( os.path.join(output_directory, 'foo-' + file_id + '.png'))
-            print("saved")
-            if is_mac():
-                time.sleep(0.1)
-
-
-    @staticmethod
-    def next():
-        pass
-
     @staticmethod
     def init():
+        linux_plot_issue()
         print('matplotlib init.')
         plt.cla()
         #plt.imshow(main_artworks[0])
