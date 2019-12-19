@@ -27,6 +27,8 @@ def simple_triangles(size_shape, RGB_CHANNELS):
     W,H = 14,14
     those = []
     for i in range(10):
+        img_rgb = np.zeros((W,H,RGB_CHANNELS), dtype=np.uint8)
+
         img = np.zeros((W, H), dtype=np.uint8)
         rr, cc, val = line_aa(1, 1, 8, 4)
         img[rr, cc] = val * 255
@@ -35,13 +37,15 @@ def simple_triangles(size_shape, RGB_CHANNELS):
 
         rgbi = i % RGB_CHANNELS
 
-        #rr, cc, val = line_aa(0+i, 13-i, 13-i, 4)
-        #img[rr, cc] = val * 255
+        rr, cc, val = line_aa(0+i, 13-i, 13-i, 4)
+        img[rr, cc] = val * 255
 
         # scipy.misc.imsave("out.png", img)
-        img_rgb = np.repeat(img[:,:, None], RGB_CHANNELS, axis=2)
+        #img_rgb_delta = np.repeat(img[:,:, None], RGB_CHANNELS, axis=2)
         #if RGB_CHANNELS > 1:
         #    img_rgb[:,:,rgbi] = 0
+
+        img_rgb[:,:, rgbi] += img
 
         """ Check sizes """
         assert np.prod(img_rgb[:,:,0].shape) == size_shape

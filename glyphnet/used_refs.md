@@ -69,10 +69,12 @@ https://www.youtube.com/user/MorvanZhou
 ## Run on Linux
 linux preparation (ubuntu 16)
 
+The tensorflow 2 does not work yet.
 virtualenv -v --python=python3  ./tensorf2
 pip install tensorflow
 (failed)
 
+Use Tensorflow 1 instead:
 virtualenv -v --python=python3  ./tensorf1
 source ./tensorf1/bin/activate
 

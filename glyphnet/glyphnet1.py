@@ -69,7 +69,7 @@ LearningRate_Gn = 0.001            # learning rate for generator
 #LearningRate_Dc = 0.0001           # learning rate for discriminator
 LearningRate_Dc = 0.001           # learning rate for discriminator
 # 3,5,15
-N_GEN_RANDINPUTS = 15
+N_GEN_RANDINPUTS = 3
 
 
 with tf.variable_scope('Gn'):
@@ -161,8 +161,10 @@ for step in range(5000*1000): #(500*1000):
         G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
         print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
         print(images_training_batch[0,:])
-        PColor.plot_show_image(G_paintings2d, 'foo-' + str(step), 0.1, [pa0.mean(), -Dl])
-        PColor.plot_show_image(images_training_batch[0,:].reshape(RGB_SIZE), 'train-' +str(step), 4.5, [0,0])
+        PColor.plot_show_image(G_paintings2d, 'generated-' + str(step), 0.1, [pa0.mean(), -Dl])
+        if step == 0:
+            for data_idx in range(0,5):
+                PColor.plot_show_image(images_training_batch[data_idx,:].reshape(RGB_SIZE), 'train-' + str(data_idx)+'@'+str(step), 4.5, [0,0])
 
         session_saver.tick(sess)
 
