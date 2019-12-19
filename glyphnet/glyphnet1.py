@@ -136,23 +136,23 @@ for step in range(5000*1000): #(500*1000):
 
     #if True or step == 0:
     if step == 0:
-        artist_paintings_list = choose_random_batch(main_artworks, 64, FLATTENED_SIZE, RGB_CHANNELS)           # real painting from artist (15)
+        images_batch__list = choose_random_batch(main_artworks, 64, FLATTENED_SIZE, RGB_CHANNELS)           # real painting from artist (15)
 
-        actual_batchsize = len(artist_paintings_list)
-        #print('££', len(artist_paintings_list), (artist_paintings_list[0].shape))
-        #  artist_paintings_list: list of 20x20x3. list size = 64
+        actual_batchsize = len(images_batch__list)
+        #print('££', len(images_batch__list), (images_batch__list[0].shape))
+        #  images_batch__list: list of 20x20x3. list size = 64
         # intended: 64x20x20x3
-        artist_paintings = np.stack(artist_paintings_list, axis=0)
-        #print('££con:', artist_paintings.shape)
+        images_training_batch = np.stack(images_batch__list, axis=0)
+        #print('££con:', images_training_batch.shape)
 
-        #print(FLATTENED_SIZE, artist_paintings.shape[1:], artist_paintings.shape)
-        assert FLATTENED_SIZE == artist_paintings.shape[1:]   # size: batchsize x arraysize
+        #print(FLATTENED_SIZE, images_training_batch.shape[1:], images_training_batch.shape)
+        assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
 
 
     G_randinput = np.random.randn(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([G_output, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    {G_in: G_randinput, real_input: artist_paintings})[:3]
+                                    {G_in: G_randinput, real_input: images_training_batch})[:3]
 
     if step % (2500) == 0:  # plotting
 
@@ -160,8 +160,9 @@ for step in range(5000*1000): #(500*1000):
         # for visualisation only:
         G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
         print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
+        print(images_training_batch[0,:])
         PColor.plot_show_image(G_paintings2d, str(step), 0.1, [pa0.mean(), -Dl])
-        # PColor.plot_show_image(artist_paintings[0,:].reshape(RGB_SIZE), None, 4.5, [0,0])
+        # PColor.plot_show_image(images_training_batch[0,:].reshape(RGB_SIZE), None, 4.5, [0,0])
 
         session_saver.tick(sess)
 
