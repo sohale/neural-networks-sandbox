@@ -64,10 +64,10 @@ np.random.seed(1)
 # Hyper Parameters
 #  IMPORTANT DESIGN CHOICES
 
-#LR_G = 0.0001          # learning rate for generator
-LR_G = 0.001            # learning rate for generator
-#LR_D = 0.0001           # learning rate for discriminator
-LR_D = 0.001           # learning rate for discriminator
+#LearningRate_Gn = 0.0001          # learning rate for generator
+LearningRate_Gn = 0.001            # learning rate for generator
+#LearningRate_Dc = 0.0001           # learning rate for discriminator
+LearningRate_Dc = 0.001           # learning rate for discriminator
 # 3,5,15
 N_GEN_RANDINPUTS = 15
 
@@ -83,7 +83,7 @@ with tf.variable_scope('Gn'):
     #Gn_output_layer = tf.reshape(G_out1d, [] + list(SIZE_PIXELS))
     print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
-with tf.variable_scope('Discriminator'):
+with tf.variable_scope('Dc'):
     real_input = tf.placeholder(tf.float32, [None,FLATTENED_SIZE], name='real_in')
     Discr_hiddenlayer_realinput = tf.layers.dense(real_input, 128, tf.nn.relu, name='l')
 
@@ -107,9 +107,9 @@ G_loss =   tf.reduce_mean(                                    tf.log(1-Discr_out
 #D_loss = tf.Print(D_loss, [D_loss], "D_loss")
 #G_loss = tf.Print(G_loss, [G_loss], "G_loss")
 
-train_D = tf.train.AdamOptimizer(LR_D).minimize(
-    D_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator'))
-train_G = tf.train.AdamOptimizer(LR_G).minimize(
+train_D = tf.train.AdamOptimizer(LearningRate_Dc).minimize(
+    D_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Dc'))
+train_G = tf.train.AdamOptimizer(LearningRate_Gn).minimize(
     G_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Gn'))
 
 start_time = time.time()
