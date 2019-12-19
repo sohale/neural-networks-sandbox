@@ -56,7 +56,7 @@ def load_main_images(img, label):
             S, V0 = 1.0, 0.0
 
             pict_array2d = pict_array2d.astype(float) * S + V0
-            
+
             #pict_array2d = (pict_array2d / 255.0)
 
             assert FIXED_SIZE == pict_array2d.shape

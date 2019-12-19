@@ -90,8 +90,19 @@ def simple_triangles(size_shape, RGB_CHANNELS, how_many_samples=10):
         category = 'sq-border'
 
         if category == 'sq-border':
-            x1, y1 = on_border_square(np.random.rand())
-            x2, y2 = on_border_square(np.random.rand())
+            c1 = 0.0; c2 = 0.0
+            d = 0.0
+            while d < 0.0001 : # d < 0.99999 / 4.0:
+                c1 = np.random.rand()
+                c2 = np.random.rand()
+                d = np.fabs(c1 - c2)
+                side1 = int(c1*4) % 4
+                side2 = int(c2*4) % 4
+                d = np.fabs(side1-side2)
+            print('c1,c2', c1, c2)
+
+            x1, y1 = on_border_square(c1)
+            x2, y2 = on_border_square(c2)
             x1 = int(x1 * (W-1))
             y1 = int(y1 * (H-1))
             x2 = int(x2 * (W-1))
@@ -103,7 +114,7 @@ def simple_triangles(size_shape, RGB_CHANNELS, how_many_samples=10):
 
         #rr, cc, val = line_aa(x1%W, y1%H, x2%W, y2 % H)
         rr, cc, val = line_aa(x1, y1, x2, y2 )
-        print('drawing:', x1, y1, x2, y2 )
+        # print('drawing:', x1, y1, x2, y2 )
         img_rgb[rr, cc, rgbi] = np.maximum(img_rgb[rr, cc, rgbi], val * 255)
 
         img_rgb[img_rgb>255.0] = 255.0
