@@ -131,20 +131,20 @@ with tf.variable_scope('Gn'):
 
 with tf.variable_scope('Dc'):
     real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
-    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, Dc_L1, tf.nn.relu, name='l')
+    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, Dc_L1, tf.nn.relu, name='Dc_h1')
 
     #print('Discr_hiddenlayer_realinput', Discr_hiddenlayer_realinput)  #shape=(?, 20, 20, Dc_L1)
     #  WHERE is 3???
-    Discr_out_realinput = tf.layers.dense(Discr_hiddenlayer_realinput, DCR_OUTPUTS, tf.nn.sigmoid, name='out')              # probability that the image is genuine/real
+    Discr_out_realinput = tf.layers.dense(Discr_hiddenlayer_realinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
     #print('*Discr_out_realinput', Discr_out_realinput)  # shape=(?, 20, 20, 1)
 
     # reuse layers for generator
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='l', reuse=True)
-    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='l', reuse=True)
+    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
     #print('*Discr_hiddenlayer_fakeinput', Discr_hiddenlayer_fakeinput)
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
+    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
 
-    Discr_out_fakeinput = tf.layers.dense(Discr_hiddenlayer_fakeinput, DCR_OUTPUTS, tf.nn.sigmoid, name='out', reuse=True)  # probability that the image is genuine/real
+    Discr_out_fakeinput = tf.layers.dense(Discr_hiddenlayer_fakeinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
 
 
 EPS = hyperparams['eps']
