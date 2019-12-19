@@ -66,13 +66,16 @@ https://www.youtube.com/user/MorvanZhou
 
 
 
-
+## Run on Linux
 linux preparation (ubuntu 16)
+
 virtualenv -v --python=python3  ./tensorf2
 pip install tensorflow
 (failed)
 
 virtualenv -v --python=python3  ./tensorf1
+source ./tensorf1/bin/activate
+
 pip install tensorflow==1.15.0
 
 
@@ -80,3 +83,8 @@ pip install scipy
 pip install imageio
 pip install matplotlib
 pip install scikit-image
+
+sudo apt-get install tcl-dev tk-dev python-tk python3-tk
+
+every time:
+source ./tensorf1/bin/activate
