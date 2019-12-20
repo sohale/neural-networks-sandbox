@@ -139,22 +139,23 @@ with tf.variable_scope('Gn'):
 with tf.variable_scope('Dc'):
     real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
 
-    Dc_hiddenlayer_realinput = real_input
-    Dc_hiddenlayer_fakeinput = Gn_output_layer
+    # real versus fake inputs
+    Dc_hiddenlayer_real = real_input
+    Dc_hiddenlayer_fake = Gn_output_layer
     Gn_hidden_layersz = hyperparams['Dc_layers'][1:-1]
     print('Dc_hidden_layersz', Gn_hidden_layersz)
     for i in range(len(Gn_hidden_layersz)):
         Dc_hlsize = Gn_hidden_layersz[i]  # Dc_L1
-        Dc_hiddenlayer_realinput = tf.layers.dense(Dc_hiddenlayer_realinput, Dc_hlsize, tf.nn.relu, name='Dc_h1')
-        Dc_hiddenlayer_fakeinput = tf.layers.dense(Dc_hiddenlayer_fakeinput, Dc_hlsize, tf.nn.relu, name='Dc_h1', reuse=True)
-        #Dc_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-        #Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
-        #print('*Dc_hiddenlayer_fakeinput', Dc_hiddenlayer_fakeinput)
+        Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name='Dc_h1')
+        Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name='Dc_h1', reuse=True)
+        #Dc_hiddenlayer_fake = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+        #Dc_hiddenlayer_fake = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
+        #print('*Dc_hiddenlayer_fake', Dc_hiddenlayer_fake)
 
-    #print('Dc_hiddenlayer_realinput', Dc_hiddenlayer_realinput)  #shape=(?, 20, 20, Dc_L1)
+    #print('Dc_hiddenlayer_real', Dc_hiddenlayer_real)  #shape=(?, 20, 20, Dc_L1)
     #  WHERE is 3???
-    Dc_out_realinput = tf.layers.dense(Dc_hiddenlayer_realinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
-    Dc_out_fakeinput = tf.layers.dense(Dc_hiddenlayer_fakeinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
+    Dc_out_realinput = tf.layers.dense(Dc_hiddenlayer_real, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
+    Dc_out_fakeinput = tf.layers.dense(Dc_hiddenlayer_fake, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
     #print('*Dc_out_realinput', Dc_out_realinput)  # shape=(?, 20, 20, 1)
 
 
