@@ -115,15 +115,20 @@ LearningRate_Dc = hyperparams['LearningRate_Dc']           # learning rate for d
 N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
 
 
-Gn_L1 = hyperparams['Gn_layers'][1]
-Dc_L1 = hyperparams['Dc_layers'][1]
+#Gn_L1 = hyperparams['Gn_layers'][1]
+#Dc_L1 = hyperparams['Dc_layers'][1]
 
 DCR_OUTPUTS = 1
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
     Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
-    Gn_hidden_layer = tf.layers.dense(Gn_input_layer, Gn_L1, tf.nn.relu)
+    Gn_hidden_layer = Gn_input_layer
+    Gn_hidden_layersz = hyperparams['Gn_layers'][1:-1]
+    print('Gn_hidden_layersz', Gn_hidden_layersz)
+    for i in range(len(Gn_hidden_layersz)):
+        Gn_hlsize = Gn_hidden_layersz[i]
+        Gn_hidden_layer = tf.layers.dense(Gn_hidden_layer, Gn_hlsize, tf.nn.relu)
     #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
     print("FLATTENED_SIZE", FLATTENED_SIZE)
     Gn_output_layer = tf.layers.dense(Gn_hidden_layer, FLATTENED_SIZE)
@@ -133,11 +138,18 @@ with tf.variable_scope('Gn'):
 
 with tf.variable_scope('Dc'):
     real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
-    Dc_hiddenlayer_realinput = tf.layers.dense(real_input,      Dc_L1, tf.nn.relu, name='Dc_h1')
-    Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-    #Dc_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-    #Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
-    #print('*Dc_hiddenlayer_fakeinput', Dc_hiddenlayer_fakeinput)
+
+    Dc_hiddenlayer_realinput = real_input
+    Dc_hiddenlayer_fakeinput = Gn_output_layer
+    Gn_hidden_layersz = hyperparams['Dc_layers'][1:-1]
+    print('Dc_hidden_layersz', Gn_hidden_layersz)
+    for i in range(len(Gn_hidden_layersz)):
+        Dc_hlsize = Gn_hidden_layersz[i]  # Dc_L1
+        Dc_hiddenlayer_realinput = tf.layers.dense(Dc_hiddenlayer_realinput, Dc_hlsize, tf.nn.relu, name='Dc_h1')
+        Dc_hiddenlayer_fakeinput = tf.layers.dense(Dc_hiddenlayer_fakeinput, Dc_hlsize, tf.nn.relu, name='Dc_h1', reuse=True)
+        #Dc_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+        #Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
+        #print('*Dc_hiddenlayer_fakeinput', Dc_hiddenlayer_fakeinput)
 
     #print('Dc_hiddenlayer_realinput', Dc_hiddenlayer_realinput)  #shape=(?, 20, 20, Dc_L1)
     #  WHERE is 3???
