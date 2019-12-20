@@ -118,16 +118,28 @@ N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
 #Gn_L1 = hyperparams['Gn_layers'][1]
 #Dc_L1 = hyperparams['Dc_layers'][1]
 
+"""
+    @param `layers_array` is [None, 128, None]
+    e.g.: hyperparams['Gn_layers']
+"""
+def layersize_iterator(layers_array):
+    assert layers_array[0] is None
+    assert layers_array[-1] is None
+    assert len(layers_array) >= 2
+    hidden_layersz = layers_array[1:-1]
+    print('hidden_layersz', hidden_layersz)
+    for i in range(len(hidden_layersz)):
+        hlsize = hidden_layersz[i]
+        yield i, hlsize
+
+
 DCR_OUTPUTS = 1
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
     Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
     Gn_hidden_layer = Gn_input_layer
-    Gn_hidden_layersz = hyperparams['Gn_layers'][1:-1]
-    print('Gn_hidden_layersz', Gn_hidden_layersz)
-    for i in range(len(Gn_hidden_layersz)):
-        Gn_hlsize = Gn_hidden_layersz[i]
+    for i, Gn_hlsize in layersize_iterator(hyperparams['Gn_layers']):
         Gn_hidden_layer = tf.layers.dense(Gn_hidden_layer, Gn_hlsize, tf.nn.relu)
     #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
     print("FLATTENED_SIZE", FLATTENED_SIZE)
@@ -142,10 +154,8 @@ with tf.variable_scope('Dc'):
     # real versus fake inputs
     Dc_hiddenlayer_real = real_input
     Dc_hiddenlayer_fake = Gn_output_layer
-    Gn_hidden_layersz = hyperparams['Dc_layers'][1:-1]
-    print('Dc_hidden_layersz', Gn_hidden_layersz)
-    for i in range(len(Gn_hidden_layersz)):
-        Dc_hlsize = Gn_hidden_layersz[i]  # Dc_L1
+    for i, Dc_hlsize in layersize_iterator(hyperparams['Dc_layers']):
+        # Dc_L1
         Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name='Dc_h1')
         Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name='Dc_h1', reuse=True)
         #Dc_hiddenlayer_fake = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
