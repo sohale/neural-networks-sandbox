@@ -60,8 +60,10 @@ hyperparams = {
     'rgb_channels': 1,
 
     'Gn_inputs': 3,  # 3,5,15
-    'Gn_layers': [None, 8,16,32,64, 128, None],
-    'Dc_layers': [None, 128, 64, 32, 16, 8, None],
+    #'Gn_layers': [None, 8,16,32,64, 128, None],
+    #'Dc_layers': [None, 128, 64, 32, 16, 8, None],
+    'Gn_layers': [None, 16, 64, None],
+    'Dc_layers': [None, 64, 16, None],
 
     'pixel_dtype': tf.float32,
 
@@ -71,6 +73,8 @@ hyperparams = {
 
     'LearningRate_Gn': 0.0001, # 0.001
     'LearningRate_Dc': 0.0001, # 0.001
+    #'LearningRate_Gn': 0.001,
+    #'LearningRate_Dc': 0.001,
 
     'Gn_input_distr': 'randu',  # 'randn'
 
