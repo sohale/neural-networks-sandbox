@@ -50,6 +50,9 @@ exper_params = {
     'train_iters': 5000*1000,  # (500*1000)
 }
 
+# Hyper Parameters
+#  IMPORTANT DESIGN CHOICES
+
 hyperparams = {
 
     'w': 14,
@@ -105,8 +108,7 @@ PColor.init()
 tf.set_random_seed(exper_params['seed1'])
 np.random.seed(exper_params['seed2'])
 
-# Hyper Parameters
-#  IMPORTANT DESIGN CHOICES
+EPS = hyperparams['eps']
 
 LearningRate_Gn = hyperparams['LearningRate_Gn']          # learning rate for generator
 LearningRate_Dc = hyperparams['LearningRate_Dc']           # learning rate for discriminator
@@ -131,22 +133,21 @@ with tf.variable_scope('Gn'):
 
 with tf.variable_scope('Dc'):
     real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
-    Discr_hiddenlayer_realinput = tf.layers.dense(real_input, Dc_L1, tf.nn.relu, name='Dc_h1')
-    Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-    #print('*Discr_hiddenlayer_fakeinput', Discr_hiddenlayer_fakeinput)
-    #Discr_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
+    Dc_hiddenlayer_realinput = tf.layers.dense(real_input,      Dc_L1, tf.nn.relu, name='Dc_h1')
+    Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+    #Dc_hiddenlayer_fakeinput = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+    #Dc_hiddenlayer_fakeinput = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
+    #print('*Dc_hiddenlayer_fakeinput', Dc_hiddenlayer_fakeinput)
 
-    #print('Discr_hiddenlayer_realinput', Discr_hiddenlayer_realinput)  #shape=(?, 20, 20, Dc_L1)
+    #print('Dc_hiddenlayer_realinput', Dc_hiddenlayer_realinput)  #shape=(?, 20, 20, Dc_L1)
     #  WHERE is 3???
-    Discr_out_realinput = tf.layers.dense(Discr_hiddenlayer_realinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
-    Discr_out_fakeinput = tf.layers.dense(Discr_hiddenlayer_fakeinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
-    #print('*Discr_out_realinput', Discr_out_realinput)  # shape=(?, 20, 20, 1)
+    Dc_out_realinput = tf.layers.dense(Dc_hiddenlayer_realinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
+    Dc_out_fakeinput = tf.layers.dense(Dc_hiddenlayer_fakeinput, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
+    #print('*Dc_out_realinput', Dc_out_realinput)  # shape=(?, 20, 20, 1)
 
 
-EPS = hyperparams['eps']
-D_loss = - tf.reduce_mean(tf.log(Discr_out_realinput + EPS) + tf.log(1-Discr_out_fakeinput + EPS))
-G_loss =   tf.reduce_mean(                                    tf.log(1-Discr_out_fakeinput + EPS))
+D_loss = - tf.reduce_mean(tf.log(Dc_out_realinput + EPS) + tf.log(1-Dc_out_fakeinput + EPS))
+G_loss =   tf.reduce_mean(                                 tf.log(1-Dc_out_fakeinput + EPS))
 
 #D_loss = tf.Print(D_loss, [D_loss], "D_loss")
 #G_loss = tf.Print(G_loss, [G_loss], "G_loss")
@@ -194,7 +195,7 @@ for step in range(exper_params['train_iters']):
 
     G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
-    G_paintings, pa0, Dl = sess.run([Gn_output_layer, Discr_out_realinput, D_loss, train_D, train_G],    # train and get results
+    G_paintings, pa0, Dl = sess.run([Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G],    # train and get results
                                     {Gn_input_layer: G_randinput, real_input: images_training_batch})[:3]
 
     if step % (2500) == 0:  # plotting
