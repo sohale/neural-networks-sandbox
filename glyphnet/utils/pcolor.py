@@ -64,7 +64,7 @@ class PColor:
         #img_pix_rescale = ((G_paintings2d) / 80.0 *40  ) +0.5
         #img_pix_rescale = ((G_paintings2d) / 2.0  ) +0.5
         img_pix_rescale = G_paintings2d
-        print('img_pix_rescale.shape', img_pix_rescale.shape)
+        # print('img_pix_rescale.shape', img_pix_rescale.shape)
         RGB3D = 3
         assert len(img_pix_rescale.shape) == RGB3D
         if img_pix_rescale.shape[2] < RGB3D:
@@ -81,7 +81,6 @@ class PColor:
         plt.imshow(scaled_back_to_255.astype(np.uint8))
         print('min max:', np.min(img_pix_rescale.ravel()), np.max(img_pix_rescale.ravel()))
         #plt.pcolor(np.mean(G_paintings2d, axis=2))
-        print("@*")
         acc, score = more_info
         plt.text(-.5, 0, 'D accuracy=%.2f (0.5 for D to converge)' % acc, fontdict={'size': 15})
         plt.text(-.5, G_paintings2d.shape[1]*0.5, 'D score= %.2f (-1.38 for G to converge)' % score, fontdict={'size': 15})
@@ -140,8 +139,6 @@ class PColor:
     def init():
         linux_plot_issue()
 
-
-        print('matplotlib init.')
         plt.cla()
         #plt.imshow(main_artworks[0])
 

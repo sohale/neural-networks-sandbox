@@ -113,7 +113,7 @@ def simple_triangles(size_shape, RGB_CHANNELS, size_WH, how_many_samples=10):
         elif category == 'limp1':
             x1,y1, x2,y2 = (0+i)%W, (13-i)%H, (13-i)%W, 4
         else:
-            raise Error('bad category')
+            raise Exception('bad category')
 
         #rr, cc, val = line_aa(x1%W, y1%H, x2%W, y2 % H)
         rr, cc, val = line_aa(x1, y1, x2, y2 )

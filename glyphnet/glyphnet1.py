@@ -101,7 +101,7 @@ def rand_generator(rows, cols):
     if hyperparams['Gn_input_distr'] == 'randu':
         return np.random.rand(rows, cols)
     else:
-        raise Error('unknown')
+        raise Exception('unknown')
 
 PColor.init()
 
@@ -134,6 +134,17 @@ def layersize_iterator(layers_array):
 
 
 DCR_OUTPUTS = 1
+
+print(
+    'Report:\n', '*'*70,
+    '\n',
+    'Layers:',
+    '\n       Gn:',
+    [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE],
+    '\n       Dc:',
+    [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS],
+    '\n', '*'*70,
+)
 
 with tf.variable_scope('Gn'):
     # todo: conv2d
@@ -226,7 +237,7 @@ for step in range(exper_params['train_iters']):
         print("step:", step,   "  last batchsize=", actual_batchsize, "  time (Sec):", time.time()-start_time)
         # for visualisation only:
         G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
-        print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
+        #print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
 
         PColor.plot_show_image(
             G_paintings2d,
