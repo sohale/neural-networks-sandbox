@@ -60,8 +60,8 @@ hyperparams = {
     'rgb_channels': 1,
 
     'Gn_inputs': 3,  # 3,5,15
-    'Gn_layers': [None, 128, None],
-    'Dc_layers': [None, 128, None],
+    'Gn_layers': [None, 8,16,32,64, 128, None],
+    'Dc_layers': [None, 128, 64, 32, 16, 8, None],
 
     'pixel_dtype': tf.float32,
 
@@ -167,8 +167,9 @@ with tf.variable_scope('Dc'):
     Dc_hiddenlayer_fake = Gn_output_layer
     for i, Dc_hlsize in layersize_iterator(hyperparams['Dc_layers']):
         # Dc_L1
-        Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name='Dc_h1')
-        Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name='Dc_h1', reuse=True)
+        lname = 'Dc_h'+str(i)
+        Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name=lname)
+        Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name=lname, reuse=True)
         #Dc_hiddenlayer_fake = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
         #Dc_hiddenlayer_fake = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
         #print('*Dc_hiddenlayer_fake', Dc_hiddenlayer_fake)
