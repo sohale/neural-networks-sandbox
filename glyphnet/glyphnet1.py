@@ -15,6 +15,11 @@ choose_random_batch = image_loader.choose_random_batch
 from geo_maker import geometry_maker #import simple_triangles
 simple_triangles = geometry_maker.simple_triangles
 
+dummy = tf.test.is_gpu_available()  # purge warning messages
+print(' '*100,'*'*100, '\n'*10)
+print('GPU available?',tf.test.is_gpu_available())
+
+
 class SessionSaver:
     def __init__(self, sess, RESET_FRESH):
         # self.session_saver_init(sess, RESET_FRESH)
