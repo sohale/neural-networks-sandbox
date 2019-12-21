@@ -127,7 +127,7 @@ def wire_up_gan():
         print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
     with tf.variable_scope('Dc'):
-        real_image_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
+        real_image_input = tf.placeholder(hyperparams['pixel_dtype'], [None, FLATTENED_SIZE])
 
         # real versus fake inputs
         Dc_hiddenlayer_real = real_image_input
