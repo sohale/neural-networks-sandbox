@@ -220,7 +220,42 @@ graph_writer = tf.summary.FileWriter("./graph/", sess.graph)
 init_op = tf.global_variables_initializer()
 
 
+def prepare_training_batch():
+    images_batch__list = choose_random_batch(main_dataset, BATCHSIZE_PROV, FLATTENED_SIZE, RGB_CHANNELS, True)
 
+    #actual_batchsize = len(images_batch__list)
+    #print('££', len(images_batch__list), (images_batch__list[0].shape))
+    #  images_batch__list: list of 20x20x3. list size = 64
+    # intended: 64x20x20x3
+    images_training_batch = np.stack(images_batch__list, axis=0)
+    #print('££con:', images_training_batch.shape)
+
+    #print(FLATTENED_SIZE, images_training_batch.shape[1:], images_training_batch.shape)
+    assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
+
+    return images_training_batch
+
+def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, start_time ):
+
+    print("step:", step,   "  last batchsize=", actual_batchsize, "  time (Sec):", time.time()-start_time)
+    # for visualisation only:
+    G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
+    #print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
+
+    PColor.plot_show_image(
+        G_paintings2d,
+        'generated-' + str(step),
+        0.1,
+        [pa0.mean(), -Dl]
+    )
+    if step == 0:
+        for data_idx in range(0,15):
+            PColor.plot_show_image(
+                images_training_batch[data_idx,:].reshape(RGB_SIZE),
+                'train-' + str(data_idx)+'@'+str(step),
+                0.1,
+                [0,0]
+            )
 
 sess.run(init_op)
 
@@ -231,18 +266,8 @@ for step in range(exper_params['train_iters']):
 
     #if True or step == 0:
     if step == 0:
-        images_batch__list = choose_random_batch(main_dataset, BATCHSIZE_PROV, FLATTENED_SIZE, RGB_CHANNELS, True)
-
-        actual_batchsize = len(images_batch__list)
-        #print('££', len(images_batch__list), (images_batch__list[0].shape))
-        #  images_batch__list: list of 20x20x3. list size = 64
-        # intended: 64x20x20x3
-        images_training_batch = np.stack(images_batch__list, axis=0)
-        #print('££con:', images_training_batch.shape)
-
-        #print(FLATTENED_SIZE, images_training_batch.shape[1:], images_training_batch.shape)
-        assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
-
+        images_training_batch = prepare_training_batch()
+        actual_batchsize = images_training_batch.shape[0]
 
     G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
@@ -251,25 +276,7 @@ for step in range(exper_params['train_iters']):
 
     if step % (2500) == 0:  # plotting
 
-        print("step:", step,   "  last batchsize=", actual_batchsize, "  time (Sec):", time.time()-start_time)
-        # for visualisation only:
-        G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
-        #print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
-
-        PColor.plot_show_image(
-            G_paintings2d,
-            'generated-' + str(step),
-            0.1,
-            [pa0.mean(), -Dl]
-        )
-        if step == 0:
-            for data_idx in range(0,15):
-                PColor.plot_show_image(
-                    images_training_batch[data_idx,:].reshape(RGB_SIZE),
-                    'train-' + str(data_idx)+'@'+str(step),
-                    0.1,
-                    [0,0]
-                )
+        show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, start_time )
 
         session_saver.tick(sess)
 
