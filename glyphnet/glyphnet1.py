@@ -155,51 +155,57 @@ print(
     '\n', '*'*70,
 )
 
-with tf.variable_scope('Gn'):
-    # todo: conv2d
-    Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
-    Gn_hidden_layer = Gn_input_layer
-    for i, Gn_hlsize in layersize_iterator(hyperparams['Gn_layers']):
-        Gn_hidden_layer = tf.layers.dense(Gn_hidden_layer, Gn_hlsize, tf.nn.relu)
-    #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
-    print("FLATTENED_SIZE", FLATTENED_SIZE)
-    Gn_output_layer = tf.layers.dense(Gn_hidden_layer, FLATTENED_SIZE)
+def wire_up_gan():
+    with tf.variable_scope('Gn'):
+        # todo: conv2d
+        Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
+        Gn_hidden_layer = Gn_input_layer
+        for i, Gn_hlsize in layersize_iterator(hyperparams['Gn_layers']):
+            Gn_hidden_layer = tf.layers.dense(Gn_hidden_layer, Gn_hlsize, tf.nn.relu)
+        #Gn_output_layer = tf.reshape(G_out1d, [-1, FLATTENED_SIZE])
+        print("FLATTENED_SIZE", FLATTENED_SIZE)
+        Gn_output_layer = tf.layers.dense(Gn_hidden_layer, FLATTENED_SIZE)
 
-    #Gn_output_layer = tf.reshape(G_out1d, [] + list(SIZE_PIXELS))
-    print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
+        #Gn_output_layer = tf.reshape(G_out1d, [] + list(SIZE_PIXELS))
+        print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
-with tf.variable_scope('Dc'):
-    real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
+    with tf.variable_scope('Dc'):
+        real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
 
-    # real versus fake inputs
-    Dc_hiddenlayer_real = real_input
-    Dc_hiddenlayer_fake = Gn_output_layer
-    for i, Dc_hlsize in layersize_iterator(hyperparams['Dc_layers']):
-        # Dc_L1
-        lname = 'Dc_h'+str(i)
-        Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name=lname)
-        Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name=lname, reuse=True)
-        #Dc_hiddenlayer_fake = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
-        #Dc_hiddenlayer_fake = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
-        #print('*Dc_hiddenlayer_fake', Dc_hiddenlayer_fake)
+        # real versus fake inputs
+        Dc_hiddenlayer_real = real_input
+        Dc_hiddenlayer_fake = Gn_output_layer
+        for i, Dc_hlsize in layersize_iterator(hyperparams['Dc_layers']):
+            # Dc_L1
+            lname = 'Dc_h'+str(i)
+            Dc_hiddenlayer_real = tf.layers.dense(Dc_hiddenlayer_real, Dc_hlsize, tf.nn.relu, name=lname)
+            Dc_hiddenlayer_fake = tf.layers.dense(Dc_hiddenlayer_fake, Dc_hlsize, tf.nn.relu, name=lname, reuse=True)
+            #Dc_hiddenlayer_fake = tf.layers.dense(G_out1d, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)
+            #Dc_hiddenlayer_fake = tf.layers.dense(Gn_output_layer, Dc_L1, tf.nn.relu, name='Dc_h1', reuse=True)            # receive art work from a newbie like G
+            #print('*Dc_hiddenlayer_fake', Dc_hiddenlayer_fake)
 
-    #print('Dc_hiddenlayer_real', Dc_hiddenlayer_real)  #shape=(?, 20, 20, Dc_L1)
-    #  WHERE is 3???
-    Dc_out_realinput = tf.layers.dense(Dc_hiddenlayer_real, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
-    Dc_out_fakeinput = tf.layers.dense(Dc_hiddenlayer_fake, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
-    #print('*Dc_out_realinput', Dc_out_realinput)  # shape=(?, 20, 20, 1)
+        #print('Dc_hiddenlayer_real', Dc_hiddenlayer_real)  #shape=(?, 20, 20, Dc_L1)
+        #  WHERE is 3???
+        Dc_out_realinput = tf.layers.dense(Dc_hiddenlayer_real, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out')              # probability that the image is genuine/real
+        Dc_out_fakeinput = tf.layers.dense(Dc_hiddenlayer_fake, DCR_OUTPUTS, tf.nn.sigmoid, name='Dc_out', reuse=True)  # probability that the image is genuine/real
+        #print('*Dc_out_realinput', Dc_out_realinput)  # shape=(?, 20, 20, 1)
 
 
-D_loss = - tf.reduce_mean(tf.log(Dc_out_realinput + EPS) + tf.log(1-Dc_out_fakeinput + EPS))
-G_loss =   tf.reduce_mean(                                 tf.log(1-Dc_out_fakeinput + EPS))
+    D_loss = - tf.reduce_mean(tf.log(Dc_out_realinput + EPS) + tf.log(1-Dc_out_fakeinput + EPS))
+    G_loss =   tf.reduce_mean(                                 tf.log(1-Dc_out_fakeinput + EPS))
 
-#D_loss = tf.Print(D_loss, [D_loss], "D_loss")
-#G_loss = tf.Print(G_loss, [G_loss], "G_loss")
+    #D_loss = tf.Print(D_loss, [D_loss], "D_loss")
+    #G_loss = tf.Print(G_loss, [G_loss], "G_loss")
 
-train_D = tf.train.AdamOptimizer(LearningRate_Dc).minimize(
-    D_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Dc'))
-train_G = tf.train.AdamOptimizer(LearningRate_Gn).minimize(
-    G_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Gn'))
+    train_D = tf.train.AdamOptimizer(LearningRate_Dc).minimize(
+        D_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Dc'))
+    train_G = tf.train.AdamOptimizer(LearningRate_Gn).minimize(
+        G_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Gn'))
+
+    return real_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G
+
+real_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G = wire_up_gan()
+# real_input_pixels
 
 start_time = time.time()
 
