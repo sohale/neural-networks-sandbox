@@ -108,6 +108,10 @@ def layersize_iterator(layers_array):
         yield i, hlsize
 
 def wire_up_gan():
+
+    # LAYERS_Gn = [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE]
+    # LAYERS_Dc = [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS]
+
     with tf.variable_scope('Gn'):
         # todo: conv2d
         Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
