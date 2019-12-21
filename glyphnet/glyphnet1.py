@@ -171,11 +171,11 @@ def prepare_training_batch():
 
     return images_training_batch
 
-def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, start_time ):
+def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SHAPE, start_time ):
 
     print("step:", step,   "  last batchsize=", actual_batchsize, "  time (Sec):", time.time()-start_time)
     # for visualisation only:
-    G_paintings2d = G_paintings[0,:].reshape(RGB_SIZE)
+    G_paintings2d = G_paintings[0,:].reshape(RGB_SHAPE)
     #print(G_paintings2d.shape, "shape<<<<", np.max(G_paintings2d.ravel()), G_paintings2d.dtype)
 
     PColor.plot_show_image(
@@ -187,7 +187,7 @@ def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, s
     if step == 0:
         for data_idx in range(0,15):
             PColor.plot_show_image(
-                images_training_batch[data_idx,:].reshape(RGB_SIZE),
+                images_training_batch[data_idx,:].reshape(RGB_SHAPE),
                 'train-' + str(data_idx)+'@'+str(step),
                 0.1,
                 [0,0]
@@ -196,10 +196,10 @@ def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, s
 # ******************* main **************************************************
 
 # ************** initialise some parameters **************
-
+# todo: move into wire_up_gan()
 RGB_CHANNELS = hyperparams['rgb_channels']
-RGB_SIZE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
-FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
+RGB_SHAPE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
+FLATTENED_SIZE = np.prod(np.array(RGB_SHAPE))
 BATCHSIZE_PROV = hyperparams['batch_size']
 HOW_MANY_SAMPLES_SYNTHESIZED = exper_params['data_samples']
 
@@ -211,7 +211,8 @@ EPS = hyperparams['eps']
 
 DCR_OUTPUTS = 1
 
-
+# N_GEN_RANDINPUTS, FLATTENED_SIZE
+# HOW_MANY_SAMPLES_SYNTHESIZED, BATCHSIZE_PROV, RGB_CHANNELS, RGB_SHAPE
 
 def rand_generator(rows, cols):
     if hyperparams['Gn_input_distr'] == 'randn':
@@ -235,7 +236,7 @@ print(
 # ************** prepare the [training] data ***********************
 
 # img, label, RESET_FRESH = simple_traiangles()
-main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SIZE[0],RGB_SIZE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
+main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SHAPE[0],RGB_SHAPE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
 print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
 
 tf.set_random_seed(exper_params['seed1'])
@@ -279,7 +280,7 @@ for step in range(exper_params['train_iters']):
 
     if step % (2500) == 0:  # plotting
 
-        show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, start_time )
+        show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SHAPE, start_time )
 
         session_saver.tick(sess)
 
