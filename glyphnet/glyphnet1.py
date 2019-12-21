@@ -167,7 +167,8 @@ def prepare_training_batch():
     #print('££con:', images_training_batch.shape)
 
     #print(FLATTENED_SIZE, images_training_batch.shape[1:], images_training_batch.shape)
-    assert FLATTENED_SIZE == images_training_batch.shape[1:]   # size: batchsize x arraysize
+
+    assert (FLATTENED_SIZE,) == images_training_batch.shape[1:]   # size: batchsize x arraysize
 
     return images_training_batch
 
@@ -199,7 +200,8 @@ def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SHAPE, 
 # todo: move into wire_up_gan()
 RGB_CHANNELS = hyperparams['rgb_channels']
 RGB_SHAPE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
-FLATTENED_SIZE = np.prod(np.array(RGB_SHAPE))
+FLATTENED_SIZE = int(np.prod(np.array(RGB_SHAPE)))
+PIXELS_FLATSIZE = int(FLATTENED_SIZE/RGB_CHANNELS)
 BATCHSIZE_PROV = hyperparams['batch_size']
 HOW_MANY_SAMPLES_SYNTHESIZED = exper_params['data_samples']
 
@@ -210,6 +212,9 @@ N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
 EPS = hyperparams['eps']
 
 DCR_OUTPUTS = 1
+
+LAYERS_Gn = [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE]
+LAYERS_Dc = [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS]
 
 # N_GEN_RANDINPUTS, FLATTENED_SIZE
 # HOW_MANY_SAMPLES_SYNTHESIZED, BATCHSIZE_PROV, RGB_CHANNELS, RGB_SHAPE
@@ -227,16 +232,16 @@ print(
     '\n',
     'Layers:',
     '\n       Gn:',
-    [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE],
+    LAYERS_Gn,
     '\n       Dc:',
-    [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS],
+    LAYERS_Dc,
     '\n', '*'*70,
 )
 
 # ************** prepare the [training] data ***********************
 
 # img, label, RESET_FRESH = simple_traiangles()
-main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SHAPE[0],RGB_SHAPE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
+main_dataset = simple_triangles(PIXELS_FLATSIZE, RGB_CHANNELS, (RGB_SHAPE[0],RGB_SHAPE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
 print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
 
 tf.set_random_seed(exper_params['seed1'])
