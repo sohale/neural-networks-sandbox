@@ -154,7 +154,7 @@ def wire_up_gan():
     train_G = tf.train.AdamOptimizer(LearningRate_Gn).minimize(
         G_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Gn'))
 
-    return real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G
+    return [real_image_input, Gn_input_layer], [Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G]
 
 def prepare_training_batch():
     images_batch__list = choose_random_batch(main_dataset, BATCHSIZE_PROV, FLATTENED_SIZE, RGB_CHANNELS, True)
@@ -243,7 +243,7 @@ np.random.seed(exper_params['seed2'])
 
 
 # ************** wire up the network ***********************
-real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G \
+[real_image_input, Gn_input_layer], [Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G] \
     = wire_up_gan()
 
 
