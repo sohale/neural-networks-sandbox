@@ -104,7 +104,7 @@ def simple_triangles(size_shape, RGB_CHANNELS, size_WH, how_many_samples=10):
                 side1 = int(c1*4) % 4
                 side2 = int(c2*4) % 4
                 d = np.fabs(side1-side2)
-            print('c1,c2', c1, c2)
+            #print('c1,c2', c1, c2)
 
             x1, y1 = on_border_square(c1)
             x2, y2 = on_border_square(c2)

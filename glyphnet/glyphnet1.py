@@ -259,8 +259,7 @@ def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, s
 
 sess.run(init_op)
 
-RESET_FRESH = True
-session_saver = SessionSaver(sess, RESET_FRESH)
+session_saver = SessionSaver(sess, RESET_FRESH=True)
 
 for step in range(exper_params['train_iters']):
 
