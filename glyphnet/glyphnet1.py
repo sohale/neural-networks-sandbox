@@ -60,6 +60,8 @@ exper_params = {
 
 hyperparams = {
 
+    # IMPORTANT DESIGN CHOICE
+    # 7, 14, 20, 28, 200
     'w': 14,
     'h': 14,
     'rgb_channels': 1,
@@ -88,44 +90,8 @@ hyperparams = {
 
 }
 
-RGB_CHANNELS = hyperparams['rgb_channels']
+# *******************************************************************
 
-# IMPORTANT DESIGN CHOICE
-# 7, 14, 20, 28, 200
-RGB_SIZE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
-
-FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
-
-BATCHSIZE_PROV = hyperparams['batch_size']
-
-HOW_MANY_SAMPLES_SYNTHESIZED = exper_params['data_samples']
-# img, label, RESET_FRESH = simple_traiangles()
-main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SIZE[0],RGB_SIZE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
-print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
-
-
-def rand_generator(rows, cols):
-    if hyperparams['Gn_input_distr'] == 'randn':
-        return np.random.randn(rows, cols)
-    if hyperparams['Gn_input_distr'] == 'randu':
-        return np.random.rand(rows, cols)
-    else:
-        raise Exception('unknown')
-
-PColor.init()
-
-tf.set_random_seed(exper_params['seed1'])
-np.random.seed(exper_params['seed2'])
-
-EPS = hyperparams['eps']
-
-LearningRate_Gn = hyperparams['LearningRate_Gn']          # learning rate for generator
-LearningRate_Dc = hyperparams['LearningRate_Dc']           # learning rate for discriminator
-N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
-
-
-#Gn_L1 = hyperparams['Gn_layers'][1]
-#Dc_L1 = hyperparams['Dc_layers'][1]
 
 """
     @param `layers_array` is [None, 128, None]
@@ -140,20 +106,6 @@ def layersize_iterator(layers_array):
     for i in range(len(hidden_layersz)):
         hlsize = hidden_layersz[i]
         yield i, hlsize
-
-
-DCR_OUTPUTS = 1
-
-print(
-    'Report:\n', '*'*70,
-    '\n',
-    'Layers:',
-    '\n       Gn:',
-    [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE],
-    '\n       Dc:',
-    [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS],
-    '\n', '*'*70,
-)
 
 def wire_up_gan():
     with tf.variable_scope('Gn'):
@@ -204,22 +156,6 @@ def wire_up_gan():
 
     return real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G
 
-real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G \
-    = wire_up_gan()
-
-
-start_time = time.time()
-
-
-sess = tf.Session()
-
-# For Tesnorboard
-graph_writer = tf.summary.FileWriter("./graph/", sess.graph)
-
-# Add an op to initialize the variables.
-init_op = tf.global_variables_initializer()
-
-
 def prepare_training_batch():
     images_batch__list = choose_random_batch(main_dataset, BATCHSIZE_PROV, FLATTENED_SIZE, RGB_CHANNELS, True)
 
@@ -256,6 +192,74 @@ def show_output_so_far(G_paintings, pa0, Dl, step, actual_batchsize, RGB_SIZE, s
                 0.1,
                 [0,0]
             )
+
+# ******************* main **************************************************
+
+# ************** initialise some parameters **************
+
+RGB_CHANNELS = hyperparams['rgb_channels']
+RGB_SIZE = (hyperparams['w'], hyperparams['h'], RGB_CHANNELS)
+FLATTENED_SIZE = np.prod(np.array(RGB_SIZE))
+BATCHSIZE_PROV = hyperparams['batch_size']
+HOW_MANY_SAMPLES_SYNTHESIZED = exper_params['data_samples']
+
+LearningRate_Gn = hyperparams['LearningRate_Gn']          # learning rate for generator
+LearningRate_Dc = hyperparams['LearningRate_Dc']           # learning rate for discriminator
+N_GEN_RANDINPUTS = hyperparams['Gn_inputs']
+
+EPS = hyperparams['eps']
+
+DCR_OUTPUTS = 1
+
+
+
+def rand_generator(rows, cols):
+    if hyperparams['Gn_input_distr'] == 'randn':
+        return np.random.randn(rows, cols)
+    if hyperparams['Gn_input_distr'] == 'randu':
+        return np.random.rand(rows, cols)
+    else:
+        raise Exception('unknown')
+
+print(
+    'Report:\n', '*'*70,
+    '\n',
+    'Layers:',
+    '\n       Gn:',
+    [N_GEN_RANDINPUTS, hyperparams['Gn_layers'][1:-1], FLATTENED_SIZE],
+    '\n       Dc:',
+    [FLATTENED_SIZE, hyperparams['Dc_layers'][1:-1], DCR_OUTPUTS],
+    '\n', '*'*70,
+)
+
+# ************** prepare the [training] data ***********************
+
+# img, label, RESET_FRESH = simple_traiangles()
+main_dataset = simple_triangles(FLATTENED_SIZE/RGB_CHANNELS, RGB_CHANNELS, (RGB_SIZE[0],RGB_SIZE[1]), HOW_MANY_SAMPLES_SYNTHESIZED)
+print('synthesized %d samples' % HOW_MANY_SAMPLES_SYNTHESIZED)
+
+tf.set_random_seed(exper_params['seed1'])
+np.random.seed(exper_params['seed2'])
+
+
+# ************** wire up the network ***********************
+real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G \
+    = wire_up_gan()
+
+
+# ************** start the training session ***********************
+
+PColor.init()
+
+start_time = time.time()
+
+sess = tf.Session()
+
+# For Tesnorboard
+graph_writer = tf.summary.FileWriter("./graph/", sess.graph)
+
+# Add an op to initialize the variables.
+init_op = tf.global_variables_initializer()
 
 sess.run(init_op)
 
