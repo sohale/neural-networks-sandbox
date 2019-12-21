@@ -114,6 +114,7 @@ def wire_up_gan():
 
     with tf.variable_scope('Gn'):
         # todo: conv2d
+        # The first dimension of the placeholder is None, meaning we can have any number of rows.
         Gn_input_layer = tf.placeholder(hyperparams['Gn_input_dtype'], [None, N_GEN_RANDINPUTS])          # (from normal distribution)
         Gn_hidden_layer = Gn_input_layer
         for i, Gn_hlsize in layersize_iterator(hyperparams['Gn_layers']):
@@ -284,8 +285,13 @@ for step in range(exper_params['train_iters']):
 
     G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
-    G_paintings, pa0, Dl = sess.run([Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    feed_dict={Gn_input_layer: G_randinput, real_image_input: images_training_batch})[:3]
+    # runs each of the following:
+    results_to_evaluate = [Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G]
+    # by feeding the following inputs:
+    feed_dict = {Gn_input_layer: G_randinput, real_image_input: images_training_batch}
+
+    (G_paintings, pa0, Dl) = sess.run(results_to_evaluate,    # train and get results
+                                    feed_dict=feed_dict)[:3]
 
     if step % (2500) == 0:  # plotting
 
