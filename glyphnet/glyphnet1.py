@@ -170,10 +170,10 @@ def wire_up_gan():
         print('Gn_output_layer', Gn_output_layer)  #shape=(?, 20, 20, 3)
 
     with tf.variable_scope('Dc'):
-        real_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
+        real_image_input = tf.placeholder(hyperparams['pixel_dtype'], [None,FLATTENED_SIZE], name='real_in')
 
         # real versus fake inputs
-        Dc_hiddenlayer_real = real_input
+        Dc_hiddenlayer_real = real_image_input
         Dc_hiddenlayer_fake = Gn_output_layer
         for i, Dc_hlsize in layersize_iterator(hyperparams['Dc_layers']):
             # Dc_L1
@@ -202,10 +202,11 @@ def wire_up_gan():
     train_G = tf.train.AdamOptimizer(LearningRate_Gn).minimize(
         G_loss, var_list=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Gn'))
 
-    return real_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G
+    return real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G
 
-real_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G = wire_up_gan()
-# real_input_pixels
+real_image_input, Gn_input_layer, Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G \
+    = wire_up_gan()
+
 
 start_time = time.time()
 
@@ -246,7 +247,7 @@ for step in range(exper_params['train_iters']):
     G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    {Gn_input_layer: G_randinput, real_input: images_training_batch})[:3]
+                                    {Gn_input_layer: G_randinput, real_image_input: images_training_batch})[:3]
 
     if step % (2500) == 0:  # plotting
 
