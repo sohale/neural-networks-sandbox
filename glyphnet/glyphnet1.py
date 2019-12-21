@@ -285,7 +285,7 @@ for step in range(exper_params['train_iters']):
     G_randinput = rand_generator(actual_batchsize, N_GEN_RANDINPUTS)
 
     G_paintings, pa0, Dl = sess.run([Gn_output_layer, Dc_out_realinput, D_loss, train_D, train_G],    # train and get results
-                                    {Gn_input_layer: G_randinput, real_image_input: images_training_batch})[:3]
+                                    feed_dict={Gn_input_layer: G_randinput, real_image_input: images_training_batch})[:3]
 
     if step % (2500) == 0:  # plotting
 
