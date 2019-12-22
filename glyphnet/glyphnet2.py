@@ -27,9 +27,9 @@ UNKNOWN_SIZE = -1
 PIXEL_DTYPE = tf.uint8
 
 RGB3DIMS = 3
-W = 15
-H = 15
-BATCHSIZE = 2
+W = 2 #15
+H = 2 #15
+BATCHSIZE = 4 #2
 
 # receptive field size
 RF1 = 3
@@ -38,10 +38,12 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 
-j = 0
-k = 0
-ll = [input[:, i,j,k][:, None, None] for i in range(W)]
-layer_h1 = tf.concat(ll, axis=1) # axis=0??
+ll = []
+for x in range(W):
+    for y in range(H):
+            #for c in range(RGB3DIMS):
+            ll += [input[:, x,y,:][:, None, :]]
+layer_h1 = tf.concat(ll, axis=1) # row
 output = layer_h1 * 2
 
 print(input[0,0,0])
@@ -54,11 +56,21 @@ print(layer_h1)
 #==================================================
 # input data
 
-img_shape = (W,H, RGB3DIMS)
-img_shape1 = (W, 1, RGB3DIMS)
-row = np.arange(H, dtype=np.uint8)
-data_img = np.tile( row[None,:,None], img_shape1)
-data_images_batch = np.tile( data_img[None, :,:,:], [BATCHSIZE, 1,1,1])
+# img_shape = (W,H, RGB3DIMS)
+
+row123H = np.arange(H, dtype=np.uint8)
+img_shape1H = (W, 1, RGB3DIMS)
+data_img_1 = np.tile( row123H[None,:,None], img_shape1H)
+
+row123W = np.arange(W, dtype=np.uint8)
+img_shape1W = (1, H, RGB3DIMS)
+data_img_2 = np.tile( row123W[:,None,None], img_shape1W)
+data_img = data_img_1 + data_img_2*100
+
+print(np.mean(data_img, axis=2))
+data_images_batch = np.tile( data_img_1[None, :,:,:], [BATCHSIZE, 1,1,1])
+print(np.mean(data_images_batch, axis=3))
+
 
 #=================================================
 # running the NN
