@@ -8,9 +8,12 @@ import numpy as np
 import time
 import scipy.misc
 import imageio
+np.set_printoptions(threshold=5, linewidth=80, precision=1)
 
 
 RGB3DIMS = 3
+W = 2
+H = 4
 
 # wiring up the circuit
 input = tf.placeholder(tf.uint8, [None, None, RGB3DIMS])
@@ -18,16 +21,13 @@ output = input * 2
 
 # input data
 
-img_shape = (2,4,3)
-img_shape1 = (img_shape[0], 1, img_shape[2])
 #data_im1 = np.zeros(img_shape, dtype=np.uint8)
-row = np.arange(img_shape[1], dtype=np.uint8) [None,:,None]
+
+img_shape = (W,H, RGB3DIMS)
+img_shape1 = (W, 1, RGB3DIMS)
+row = np.arange(H, dtype=np.uint8) [None,:,None]
 data_im1 = np.tile( row, img_shape1)
 
-print(row.shape)
-print(data_im1.shape)
-
-np.set_printoptions(threshold=5, linewidth=80, precision=1)
 
 
 # running the NN
