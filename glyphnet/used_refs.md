@@ -75,8 +75,9 @@ pip install tensorflow
 (failed)
 
 Use Tensorflow 1 instead:
-virtualenv -v --python=python3  ./tensorf1
-source ./tensorf1/bin/activate
+# virtualenv -v --python=python3  ./tensorf1
+virtualenv -v --python=python3  ~/.virtualenvs/tensorf1
+source ~/.virtualenvs/tensorf1/bin/activate
 
 pip install tensorflow==1.15.0
 
@@ -89,4 +90,4 @@ pip install scikit-image
 sudo apt-get install tcl-dev tk-dev python-tk python3-tk
 
 every time:
-source ./tensorf1/bin/activate
+source ~/.virtualenvs/tensorf1/bin/activate
