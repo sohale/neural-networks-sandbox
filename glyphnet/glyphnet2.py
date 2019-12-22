@@ -29,17 +29,6 @@ PIXEL_DTYPE = tf.float32
 HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
-RGB3DIMS = 3
-W = 3 #15
-H = 3 #15
-BATCHSIZE = 4 #2
-
-# receptive field size
-RF1 = 2 #3
-
-input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
-#reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
-#output = reshp * 2
 
 def make_conv_rf(input, SHAPE, RF1):
     (W,H,RGB3DIMS) = SHAPE
@@ -71,6 +60,19 @@ def make_conv_rf(input, SHAPE, RF1):
             ll += [out1[:, None, :]] # prepare for row-like structure
     layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
     return layer_h1
+
+
+RGB3DIMS = 3
+W = 3 #15
+H = 3 #15
+BATCHSIZE = 4 #2
+
+# receptive field size
+RF1 = 2 #3
+
+input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
+#reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
+#output = reshp * 2
 
 layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1)
 output = layer_h1 * 2
