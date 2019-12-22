@@ -12,9 +12,11 @@ import imageio
 
 RGB3DIMS = 3
 
-
+# wiring up the circuit
 input = tf.placeholder(tf.uint8, [None, None, RGB3DIMS])
 output = input * 2
+
+# input data
 
 img_shape = (2,4,3)
 img_shape1 = (img_shape[0], 1, img_shape[2])
@@ -28,10 +30,13 @@ print(data_im1.shape)
 np.set_printoptions(threshold=5, linewidth=80, precision=1)
 
 
+# running the NN
+
 sess = tf.Session()
 (out_data,) = \
     sess.run([output], feed_dict={input: data_im1})
 
+# report the results
 print('input')
 print(data_im1)
 print('output')
