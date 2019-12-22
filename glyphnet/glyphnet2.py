@@ -41,33 +41,38 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 
-assert W-RF1+1 > 0
-assert H-RF1+1 > 0
+def make_conv_rf(input, SHAPE, RF1):
+    (W,H,RGB3DIMS) = SHAPE
+    assert W-RF1+1 > 0
+    assert H-RF1+1 > 0
 
-ll = []
-for x in range(W-RF1+1):
-    for y in range(H-RF1+1):
-        #for c in range(RGB3DIMS):
-        print('x,y', x,y)
-        suminp = 0
-        for dx in range(RF1):
-            for dy in range(RF1):
-                print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
-                inp_x, inp_y = x+dx, y+dy
-                v1 = input[:, inp_x,inp_y, :]
-                randinitval = tf.random_uniform([1], -1, 1, seed=0)
-                w1 = tf.Variable(randinitval, dtype=WEIGHT_DTYPE)
-                suminp = suminp + w1 * v1
-        print('>>', suminp)
-        b1 = tf.Variable(0.0, dtype=HL_DTYPE)  # (tf.zeros([1]) )
-        suminp = suminp + b1
-        nonlinearity1 = tf.nn.relu
-        #nonlinearity1 = tf.sigmoid
-        out1 = nonlinearity1( suminp )
+    ll = []
+    for x in range(W-RF1+1):
+        for y in range(H-RF1+1):
+            #for c in range(RGB3DIMS):
+            print('x,y', x,y)
+            suminp = 0
+            for dx in range(RF1):
+                for dy in range(RF1):
+                    print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
+                    inp_x, inp_y = x+dx, y+dy
+                    v1 = input[:, inp_x,inp_y, :]
+                    randinitval = tf.random_uniform([1], -1, 1, seed=0)
+                    w1 = tf.Variable(randinitval, dtype=WEIGHT_DTYPE)
+                    suminp = suminp + w1 * v1
+            print('>>', suminp)
+            b1 = tf.Variable(0.0, dtype=HL_DTYPE)  # (tf.zeros([1]) )
+            suminp = suminp + b1
+            nonlinearity1 = tf.nn.relu
+            #nonlinearity1 = tf.sigmoid
+            out1 = nonlinearity1( suminp )
 
-        #ll += [v1[:, None, :]]
-        ll += [out1[:, None, :]] # prepare for row-like structure
-layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
+            #ll += [v1[:, None, :]]
+            ll += [out1[:, None, :]] # prepare for row-like structure
+    layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
+    return layer_h1
+
+layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1)
 output = layer_h1 * 2
 
 print(input[0,0,0])
