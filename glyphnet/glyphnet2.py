@@ -26,6 +26,8 @@ UNKNOWN_SIZE = -1
 
 # PIXEL_DTYPE = tf.uint8
 PIXEL_DTYPE = tf.float32
+HL_DTYPE = tf.float32
+WEIGHT_DTYPE = tf.float32
 
 RGB3DIMS = 3
 W = 3 #15
@@ -54,13 +56,11 @@ for x in range(W-RF1+1):
                 inp_x, inp_y = x+dx, y+dy
                 v1 = input[:, inp_x,inp_y, :]
                 randinitval = tf.random_uniform([1], -1, 1, seed=0)
-                w1 = tf.Variable(randinitval)
-                #suminp = suminp + w1 * v1
-                suminp = suminp + v1
+                w1 = tf.Variable(randinitval, dtype=WEIGHT_DTYPE)
+                suminp = suminp + w1 * v1
         print('>>', suminp)
-        b1 = tf.Variable(tf.zeros([1]) )
-        #suminp = suminp + b1
-        suminp = suminp
+        b1 = tf.Variable(0.0, dtype=HL_DTYPE)  # (tf.zeros([1]) )
+        suminp = suminp + b1
         nonlinearity1 = tf.nn.relu
         #nonlinearity1 = tf.sigmoid
         out1 = nonlinearity1( suminp )
