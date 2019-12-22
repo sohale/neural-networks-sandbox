@@ -124,7 +124,18 @@ def data_maker_fake(BATCHSIZE, shape, pixel_npdtype):
     print(np.mean(data_images_batch, axis=3))
     return data_images_batch
 
-data_images_batch = data_maker_fake(BATCHSIZE, (W,H,RGB3DIMS), np.float)
+def data_maker_geometrik(BATCHSIZE, shape, pixel_npdtype):
+    W_H = shape[:2]
+    (W,H) = W_H
+    WxH = W*H  # np.prod(np.array([W,H]))
+    R3 = shape[2]
+    images_batch__list = simple_triangles(WxH, R3, W_H, how_many_samples=BATCHSIZE)
+    images_training_batch = np.stack(images_batch__list, axis=0)
+    #assert (FLATTENED_SIZE,) == images_training_batch.shape[1:]
+    return np.reshape(images_training_batch, [BATCHSIZE, W,H,R3])
+
+# data_images_batch = data_maker_fake(BATCHSIZE, (W,H,RGB3DIMS), np.float)
+data_images_batch = data_maker_geometrik(BATCHSIZE, (W,H,RGB3DIMS), np.float)
 
 #=================================================
 # running the NN
