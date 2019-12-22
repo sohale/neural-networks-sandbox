@@ -28,7 +28,7 @@ PIXEL_DTYPE = tf.uint8
 
 RGB3DIMS = 3
 W = 2 #15
-H = 2 #15
+H = 3 #15
 BATCHSIZE = 4 #2
 
 # receptive field size
@@ -42,8 +42,9 @@ ll = []
 for x in range(W):
     for y in range(H):
             #for c in range(RGB3DIMS):
-            ll += [input[:, x,y,:][:, None, :]]
-layer_h1 = tf.concat(ll, axis=1) # row
+            v1 = input[:, x,y,:]
+            ll += [v1[:, None, :]] # prepare for row-like structure
+layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
 output = layer_h1 * 2
 
 print(input[0,0,0])
@@ -51,7 +52,7 @@ print(input[0,0,0,0])
 print(input[-1,0,0,0]) # no
 print(input[:, 0,0,0]) # Tensor("strided_slice_17:0", shape=(?,), dtype=uint8)
 
-print(layer_h1)
+print('layer_h1', layer_h1) # shape=(?, 6, 3) = (?, W*H, 3)
 
 #==================================================
 # input data
