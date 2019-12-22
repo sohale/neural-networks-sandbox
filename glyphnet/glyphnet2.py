@@ -30,8 +30,10 @@ HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
 
-def make_conv_rf(input, SHAPE, RF1):
+def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
     (W,H,RGB3DIMS) = SHAPE
+    assert tuple(input.shape[1:]) == (W,H,RGB3DIMS)
+
     assert W-RF1+1 > 0
     assert H-RF1+1 > 0
 
@@ -52,8 +54,6 @@ def make_conv_rf(input, SHAPE, RF1):
             print('>>', suminp)
             b1 = tf.Variable(0.0, dtype=HL_DTYPE)  # (tf.zeros([1]) )
             suminp = suminp + b1
-            nonlinearity1 = tf.nn.relu
-            #nonlinearity1 = tf.sigmoid
             out1 = nonlinearity1( suminp )
 
             #ll += [v1[:, None, :]]
@@ -74,7 +74,9 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 
-layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1)
+nonlinearity1 = tf.nn.relu
+#nonlinearity1 = tf.sigmoid
+layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, nonlinearity1)
 output = layer_h1 * 2
 
 print(input[0,0,0])
