@@ -17,9 +17,12 @@ H = 3
 BATCHSIZE = 2
 
 # wiring up the circuit
-input = tf.placeholder(tf.uint8, [BATCHSIZE, W, H, RGB3DIMS])
-# input = tf.placeholder(tf.uint8, [None, W, H, RGB3DIMS])
-output = input * 2
+# input = tf.placeholder(tf.uint8, [BATCHSIZE, W, H, RGB3DIMS])
+# Use None for unknown sizes.
+input = tf.placeholder(tf.uint8, [None, W, H, RGB3DIMS])
+# Use -1 (instead of None) for unknown sizes
+reshp = tf.reshape(input, [-1, W*H*RGB3DIMS])
+output = reshp * 2
 
 # input data
 
