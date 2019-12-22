@@ -70,6 +70,8 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
 # =================================================
 
 # Fixme: the RGB needs to annihilate at level 1
+# The level2 needs to have a quasi-location: based on which we define a distance.
+#  Pne way is to have another factor instead of 3 of RGB. This means expantion of dimensions (as in LGN to V1)
 RGB3DIMS = 1
 W = 5 #15
 H = 5 #15
@@ -102,22 +104,27 @@ print('layer_h1', layer_h1) # shape=(?, 6, 3) = (?, W*H, 3)
 
 #==================================================
 # input data
-
 # img_shape = (W,H, RGB3DIMS)
 
-row123H = np.arange(H, dtype=np.uint8)
-img_shape1H = (W, 1, RGB3DIMS)
-data_img_1 = np.tile( row123H[None,:,None], img_shape1H)
+def data_maker_fake(BATCHSIZE, shape, pixel_npdtype):
+    (W,H,RGB3DIMS) = shape
 
-row123W = np.arange(W, dtype=np.uint8)
-img_shape1W = (1, H, RGB3DIMS)
-data_img_2 = np.tile( row123W[:,None,None], img_shape1W)
-data_img = data_img_1 + data_img_2*100
+    # numpy only
+    row123H = np.arange(H, dtype=pixel_npdtype)
+    img_shape1H = (W, 1, RGB3DIMS)
+    data_img_1 = np.tile( row123H[None,:,None], img_shape1H)
 
-print(np.mean(data_img, axis=2))
-data_images_batch = np.tile( data_img_1[None, :,:,:], [BATCHSIZE, 1,1,1])
-print(np.mean(data_images_batch, axis=3))
+    row123W = np.arange(W, dtype=pixel_npdtype)
+    img_shape1W = (1, H, RGB3DIMS)
+    data_img_2 = np.tile( row123W[:,None,None], img_shape1W)
+    data_img = data_img_1 + data_img_2*100
 
+    print(np.mean(data_img, axis=2))
+    data_images_batch = np.tile( data_img_1[None, :,:,:], [BATCHSIZE, 1,1,1])
+    print(np.mean(data_images_batch, axis=3))
+    return data_images_batch
+
+data_images_batch = data_maker_fake(BATCHSIZE, (W,H,RGB3DIMS), np.float)
 
 #=================================================
 # running the NN
