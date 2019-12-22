@@ -32,11 +32,13 @@ WEIGHT_DTYPE = tf.float32
 
 def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
     (W,H,RGB3DIMS) = SHAPE
-    assert tuple(input.shape[1:]) == (W,H,RGB3DIMS)
+    assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified SHAPE (size) must match %s. """ % (repr(input.shape[1:]))
 
     NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
-    assert W-RF1+1 > 0
-    assert H-RF1+1 > 0
+    assert W-RF1+1 > 0, """RF size %d does not fit in W=%d""" % (RF1, W)
+    assert H-RF1+1 > 0, """RF size %d does not fit in H=%d""" % (RF1, H)
+
+    assert RF1 > 1, """ no point in convolution with RF=%d < 2 """ %(RF1)
 
     ll = []
     for x in range(W-RF1+1):
@@ -67,13 +69,15 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
 
 # =================================================
 
-RGB3DIMS = 3
-W = 3 #15
-H = 3 #15
+# Fixme: the RGB needs to annihilate at level 1
+RGB3DIMS = 1
+W = 5 #15
+H = 5 #15
 BATCHSIZE = 4 #2
 
 # receptive field size
-RF1 = 2 #3
+RF1 = 4 #3
+RF2 = 2
 
 input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
@@ -81,11 +85,13 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 
 nonlinearity1 = tf.nn.relu
 #nonlinearity1 = tf.sigmoid
-layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, nonlinearity1)
+layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, tf.nn.relu)
+layer_h2 = make_conv_rf(layer_h1, (W-RF1+1,H-RF1+1,RGB3DIMS), RF2, tf.nn.relu)
 
 print(input.shape, '->', layer_h1.shape)
+print(layer_h1.shape, '->', layer_h2.shape)
 
-output = layer_h1 * 2
+output = layer_h2 * 2
 
 print(input[0,0,0])
 print(input[0,0,0,0])
