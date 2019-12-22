@@ -11,7 +11,7 @@ import imageio
 np.set_printoptions(threshold=5, linewidth=80, precision=1)
 
 
-RGB3DIMS = 1
+RGB3DIMS = 3
 W = 2
 H = 3
 BATCHSIZE = 2
@@ -21,7 +21,7 @@ BATCHSIZE = 2
 # Use None for unknown sizes.
 input = tf.placeholder(tf.uint8, [None, W, H, RGB3DIMS])
 # Use -1 (instead of None) for unknown sizes
-reshp = tf.reshape(input, [-1, W*H*RGB3DIMS])
+reshp = tf.reshape(input, [-1, W*H, RGB3DIMS])
 output = reshp * 2
 
 # input data
