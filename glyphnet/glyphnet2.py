@@ -24,26 +24,49 @@ UNKNOWN_SIZE = -1
 
 #=================================================
 
-PIXEL_DTYPE = tf.uint8
+# PIXEL_DTYPE = tf.uint8
+PIXEL_DTYPE = tf.float32
 
 RGB3DIMS = 3
-W = 2 #15
+W = 3 #15
 H = 3 #15
 BATCHSIZE = 4 #2
 
 # receptive field size
-RF1 = 3
+RF1 = 2 #3
 
 input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 
+assert W-RF1+1 > 0
+assert H-RF1+1 > 0
+
 ll = []
-for x in range(W):
-    for y in range(H):
-            #for c in range(RGB3DIMS):
-            v1 = input[:, x,y,:]
-            ll += [v1[:, None, :]] # prepare for row-like structure
+for x in range(W-RF1+1):
+    for y in range(H-RF1+1):
+        #for c in range(RGB3DIMS):
+        print('x,y', x,y)
+        suminp = 0
+        for dx in range(RF1):
+            for dy in range(RF1):
+                print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
+                inp_x, inp_y = x+dx, y+dy
+                v1 = input[:, inp_x,inp_y, :]
+                randinitval = tf.random_uniform([1], -1, 1, seed=0)
+                w1 = tf.Variable(randinitval)
+                #suminp = suminp + w1 * v1
+                suminp = suminp + v1
+        print('>>', suminp)
+        b1 = tf.Variable(tf.zeros([1]) )
+        #suminp = suminp + b1
+        suminp = suminp
+        nonlinearity1 = tf.nn.relu
+        #nonlinearity1 = tf.sigmoid
+        out1 = nonlinearity1( suminp )
+
+        #ll += [v1[:, None, :]]
+        ll += [out1[:, None, :]] # prepare for row-like structure
 layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
 output = layer_h1 * 2
 
@@ -77,6 +100,9 @@ print(np.mean(data_images_batch, axis=3))
 # running the NN
 
 sess = tf.Session()
+
+sess.run( tf.global_variables_initializer() )
+
 (out_data,) = \
     sess.run([output], feed_dict={input: data_images_batch})
 
