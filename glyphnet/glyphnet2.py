@@ -34,6 +34,7 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
     (W,H,RGB3DIMS) = SHAPE
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS)
 
+    NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
     assert W-RF1+1 > 0
     assert H-RF1+1 > 0
 
@@ -59,8 +60,12 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
             #ll += [v1[:, None, :]]
             ll += [out1[:, None, :]] # prepare for row-like structure
     layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
-    return layer_h1
 
+    NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
+    reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
+    return reshaped_hidden_layer
+
+# =================================================
 
 RGB3DIMS = 3
 W = 3 #15
@@ -77,6 +82,9 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
 nonlinearity1 = tf.nn.relu
 #nonlinearity1 = tf.sigmoid
 layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, nonlinearity1)
+
+print(input.shape, '->', layer_h1.shape)
+
 output = layer_h1 * 2
 
 print(input[0,0,0])
