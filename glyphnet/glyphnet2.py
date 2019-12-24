@@ -38,19 +38,25 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
     (W,H,RGB3DIMS) = SHAPE
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified SHAPE (size) must match %s. """ % (repr(input.shape[1:]))
 
-    NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
-    assert W-RF1+1 > 0, """RF size %d does not fit in W=%d""" % (RF1, W)
-    assert H-RF1+1 > 0, """RF size %d does not fit in H=%d""" % (RF1, H)
+    #NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
+    #assert W-RF1+1 > 0, """RF size %d does not fit in W=%d""" % (RF1, W)
+    #assert H-RF1+1 > 0, """RF size %d does not fit in H=%d""" % (RF1, H)
 
     assert RF1 > 1, """ no point in convolution with RF=%d < 2 """ %(RF1)
 
+    # classes of variables:
+    #   * trainable:          at AdamOptimiser()
+    #   * placeholder:        at sess.run()
+    #   * initialisation-time assignable (at sess.run() via tf.global_variables_initializer()  )
+
     with tf.variable_scope('L'+lname):
       ll = []
-      # (x,y) are the indices of the output
+      # (x,y) are the unique indices of the output
       # note: the smaller range has nothing to do with the next layer shrinking smaller.
       # the output unit needs to have a center-of-RF, based on which we reduce the layer. We depart from convensional, just here.
-      for x in range(W-RF1+1):
-        for y in range(H-RF1+1):
+      # (x,y) is also the coords of the location.
+      for x in range(W):
+        for y in range(H):
           cuname1 = "x%dy%d"%(x,y)
           with tf.variable_scope(cuname1):
             #for c in range(RGB3DIMS):
@@ -58,15 +64,22 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
             for dx in range(RF1):
                 for dy in range(RF1):
                     # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
+                    # coords and index on input layer.
                     inp_x, inp_y = x+dx, y+dy
+                    if inp_x < 0 or inp_x >= W:
+                        continue
+                    assert W == input.shape[1]
+                    if inp_y < 0 or inp_y >= H:
+                        continue
+                    assert H == input.shape[2]
                     v1 = input[:, inp_x,inp_y, :]
-                    randinitval = tf.random_uniform([1], -1, 1, seed=0)
-                    w1 = tf.Variable(initial_value=randinitval, dtype=WEIGHT_DTYPE)
+                    randinitval = tf.random_uniform([1], -1, 1, seed=0)  # doesn accept trainable=False,
+                    w1 = tf.Variable(initial_value=randinitval, trainable=True, dtype=WEIGHT_DTYPE)
                     if suminp is None:
                         suminp = w1 * v1
                     else:
                         suminp = suminp + w1 * v1
-            b1 = tf.Variable(initial_value=0.0, dtype=HL_DTYPE)
+            b1 = tf.Variable(initial_value=0.0, trainable=True, dtype=HL_DTYPE)
             suminp = suminp + b1
             conv_unit_outp = nonlinearity1( suminp )
             # Why in tensorboard, the outputs are not of similar type? also arrows output `input` seem incorrect.
@@ -79,6 +92,7 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
       reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
     return reshaped_hidden_layer
 
+    # why input has 54 outputs, while there are 25 elements only.
 # =================================================
 
 # Fixme: the RGB needs to annihilate at level 1
@@ -102,17 +116,20 @@ nonlinearity1 = tf.nn.relu
 layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, tf.nn.relu, lname='H1')
 layer_h2 = make_conv_rf(layer_h1, (W-RF1+1,H-RF1+1,RGB3DIMS), RF2, tf.nn.relu, lname='H2')
 
-print(input.shape, '->', layer_h1.shape)
-print(layer_h1.shape, '->', layer_h2.shape)
+
+
+if False:
+    print(input.shape, '->', layer_h1.shape)
+    print(layer_h1.shape, '->', layer_h2.shape)
+
+    print(input[0,0,0])
+    print(input[0,0,0,0])
+    print(input[-1,0,0,0]) # no
+    print(input[:, 0,0,0]) # Tensor("strided_slice_17:0", shape=(?,), dtype=uint8)
 
 output = layer_h2 * 2
-
-print(input[0,0,0])
-print(input[0,0,0,0])
-print(input[-1,0,0,0]) # no
-print(input[:, 0,0,0]) # Tensor("strided_slice_17:0", shape=(?,), dtype=uint8)
-
-print('layer_h1', layer_h1) # shape=(?, 6, 3) = (?, W*H, 3)
+if False:
+    print('layer_h1', layer_h1) # shape=(?, 6, 3) = (?, W*H, 3)
 
 #==================================================
 # input data
@@ -149,6 +166,8 @@ def data_maker_geometrik(BATCHSIZE, shape, pixel_npdtype):
 # data_images_batch = data_maker_fake(BATCHSIZE, (W,H,RGB3DIMS), np.float)
 data_images_batch = data_maker_geometrik(BATCHSIZE, (W,H,RGB3DIMS), np.float)
 
+print('(W,H,RGB3DIMS)', (W,H,RGB3DIMS))
+
 #=================================================
 # running the NN
 
@@ -158,6 +177,7 @@ sess = tf.Session()
 graph_writer = tf.summary.FileWriter("./graph/", sess.graph)
 
 
+print('tf.global_variables_initializer():', tf.global_variables_initializer())
 sess.run( tf.global_variables_initializer() )
 
 (out_data,) = \
