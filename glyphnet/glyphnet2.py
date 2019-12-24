@@ -25,6 +25,37 @@ simple_triangles = geometry_maker.simple_triangles
 UNKNOWN_SIZE = -1
 
 
+# ====================================
+metadata_base = {}
+def get_element_metadata(layer_obj, inp_x,inp_y):
+    assert isinstance(inp_x, int)
+    assert isinstance(inp_y, int)
+    d = metadata_base[layer_obj]
+    key = (inp_x,inp_y)
+    metadata_content = d[key]
+    if metadata_content is None:
+        raise Exception("not found metadata enrty %r for %r" % (key, layer_obj))
+    return metadata_content
+
+def set_element_metadata(layer_obj, inp_x,inp_y, metadata_content):
+    assert isinstance(inp_x, int)
+    assert isinstance(inp_y, int)
+    if layer_obj not in metadata_base: # first time
+        metadata_base[layer_obj] = {}
+    d = metadata_base[layer_obj]
+    key = (inp_x,inp_y)
+    d[key] = metadata_content
+
+"""
+Annotating each unit with coordinates'
+"""
+def set_metadata_bulk(W,H, input):
+    assert isinstance(W, int)
+    assert isinstance(H, int)
+    for x in range(W):
+        for y in range(H):
+            mdata = (x,y, 1)
+            set_element_metadata(input, x, y, mdata)
 
 #=================================================
 
@@ -36,6 +67,7 @@ WEIGHT_DTYPE = tf.float32
 
 def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
     (W,H,RGB3DIMS) = SHAPE
+    print('input.shape for', lname, input.shape, ' asserting', tuple(input.shape[1:]), '==', (W,H,RGB3DIMS))
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified SHAPE (size) must match %s. """ % (repr(input.shape[1:]))
 
     #NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
@@ -73,6 +105,7 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
                         continue
                     assert H == input.shape[2]
                     v1 = input[:, inp_x,inp_y, :]
+                    (x,y,c) = get_element_metadata(input, inp_x,inp_y)
                     randinitval = tf.random_uniform([1], -1, 1, seed=0)  # doesn accept trainable=False,
                     w1 = tf.Variable(initial_value=randinitval, trainable=True, dtype=WEIGHT_DTYPE)
                     if suminp is None:
@@ -88,8 +121,12 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
             ll += [conv_unit_outp[:, None, :]] # prepare for row-like structure
       layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
 
-      NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
+      #NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
+      NEWRESHAPE = [-1, W,H,RGB3DIMS]
       reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
+
+      set_metadata_bulk(W,H, reshaped_hidden_layer)
+
     return reshaped_hidden_layer
 
     # why input has 54 outputs, while there are 25 elements only.
@@ -110,11 +147,14 @@ RF2 = 2
 input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS], name='i1')
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
+set_metadata_bulk(W,H, input)
 
 nonlinearity1 = tf.nn.relu
 #nonlinearity1 = tf.sigmoid
+print('L1')
 layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, tf.nn.relu, lname='H1')
-layer_h2 = make_conv_rf(layer_h1, (W-RF1+1,H-RF1+1,RGB3DIMS), RF2, tf.nn.relu, lname='H2')
+print('L2')
+layer_h2 = make_conv_rf(layer_h1, (W,H,RGB3DIMS), RF2, tf.nn.relu, lname='H2')
 
 
 
