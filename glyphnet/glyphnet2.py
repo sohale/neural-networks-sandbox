@@ -30,7 +30,7 @@ HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
 
-def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
+def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
     (W,H,RGB3DIMS) = SHAPE
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified SHAPE (size) must match %s. """ % (repr(input.shape[1:]))
 
@@ -40,22 +40,22 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1):
 
     assert RF1 > 1, """ no point in convolution with RF=%d < 2 """ %(RF1)
 
-    ll = []
-    for x in range(W-RF1+1):
+    with tf.variable_scope('L'+lname):
+      ll = []
+      for x in range(W-RF1+1):
         for y in range(H-RF1+1):
             #for c in range(RGB3DIMS):
             print('x,y', x,y)
-            suminp = 0
+            suminp = 0.0
             for dx in range(RF1):
                 for dy in range(RF1):
-                    print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
+                    # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
                     inp_x, inp_y = x+dx, y+dy
                     v1 = input[:, inp_x,inp_y, :]
                     randinitval = tf.random_uniform([1], -1, 1, seed=0)
-                    w1 = tf.Variable(randinitval, dtype=WEIGHT_DTYPE)
+                    w1 = tf.Variable(initial_value=randinitval, dtype=WEIGHT_DTYPE)
                     suminp = suminp + w1 * v1
-            print('>>', suminp)
-            b1 = tf.Variable(0.0, dtype=HL_DTYPE)  # (tf.zeros([1]) )
+            b1 = tf.Variable(initial_value=0.0, dtype=HL_DTYPE)
             suminp = suminp + b1
             out1 = nonlinearity1( suminp )
 
@@ -81,14 +81,14 @@ BATCHSIZE = 4 #2
 RF1 = 4 #3
 RF2 = 2
 
-input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS])
+input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS], name='i1')
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 
 nonlinearity1 = tf.nn.relu
 #nonlinearity1 = tf.sigmoid
-layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, tf.nn.relu)
-layer_h2 = make_conv_rf(layer_h1, (W-RF1+1,H-RF1+1,RGB3DIMS), RF2, tf.nn.relu)
+layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS), RF1, tf.nn.relu, lname='H1')
+layer_h2 = make_conv_rf(layer_h1, (W-RF1+1,H-RF1+1,RGB3DIMS), RF2, tf.nn.relu, lname='H2')
 
 print(input.shape, '->', layer_h1.shape)
 print(layer_h1.shape, '->', layer_h2.shape)
