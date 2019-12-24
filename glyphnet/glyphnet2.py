@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
-# Version 2:
-#   Relatively Sparse synapses: local connections only at Receptive Fields.
+"""
+Version 2:
+   Relatively Sparse synapses: local connections only at Receptive Fields.
 
+To run:
+    python glyphnet2.py; tensorboard --logdir="./graph"
+"""
 
 import tensorflow as tf
 import numpy as np
@@ -42,11 +46,15 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
 
     with tf.variable_scope('L'+lname):
       ll = []
+      # (x,y) are the indices of the output
+      # note: the smaller range has nothing to do with the next layer shrinking smaller.
+      # the output unit needs to have a center-of-RF, based on which we reduce the layer. We depart from convensional, just here.
       for x in range(W-RF1+1):
         for y in range(H-RF1+1):
+          cuname1 = "x%dy%d"%(x,y)
+          with tf.variable_scope(cuname1):
             #for c in range(RGB3DIMS):
-            print('x,y', x,y)
-            suminp = 0.0
+            suminp = None
             for dx in range(RF1):
                 for dy in range(RF1):
                     # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
@@ -54,17 +62,21 @@ def make_conv_rf(input, SHAPE, RF1, nonlinearity1, lname):
                     v1 = input[:, inp_x,inp_y, :]
                     randinitval = tf.random_uniform([1], -1, 1, seed=0)
                     w1 = tf.Variable(initial_value=randinitval, dtype=WEIGHT_DTYPE)
-                    suminp = suminp + w1 * v1
+                    if suminp is None:
+                        suminp = w1 * v1
+                    else:
+                        suminp = suminp + w1 * v1
             b1 = tf.Variable(initial_value=0.0, dtype=HL_DTYPE)
             suminp = suminp + b1
-            out1 = nonlinearity1( suminp )
+            conv_unit_outp = nonlinearity1( suminp )
+            # Why in tensorboard, the outputs are not of similar type? also arrows output `input` seem incorrect.
 
             #ll += [v1[:, None, :]]
-            ll += [out1[:, None, :]] # prepare for row-like structure
-    layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
+            ll += [conv_unit_outp[:, None, :]] # prepare for row-like structure
+      layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
 
-    NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
-    reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
+      NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
+      reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
     return reshaped_hidden_layer
 
 # =================================================
