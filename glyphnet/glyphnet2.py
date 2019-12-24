@@ -142,10 +142,17 @@ data_images_batch = data_maker_geometrik(BATCHSIZE, (W,H,RGB3DIMS), np.float)
 
 sess = tf.Session()
 
+# For Tesnorboard. tensorboard --logdir="./graph" # http://localhost:6006/
+graph_writer = tf.summary.FileWriter("./graph/", sess.graph)
+
+
 sess.run( tf.global_variables_initializer() )
 
 (out_data,) = \
     sess.run([output], feed_dict={input: data_images_batch})
+
+graph_writer.close()
+
 
 # report the results
 print('Input: ---------------')
