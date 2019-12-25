@@ -65,22 +65,28 @@ HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
 
-def make_conv_rf(input, SHAPE, conv_offset_range, stride_xy, nonlinearity1, lname):
-    (W,H,RGB3DIMS) = SHAPE
+def make_conv_rf(input, INPUT_SHAPE, conv_offset_range, stride_xy, nonlinearity1, lname):
+    (W,H,RGB3DIMS) = INPUT_SHAPE
     print('input.shape for', lname, input.shape, ' asserting', tuple(input.shape[1:]), '==', (W,H,RGB3DIMS))
-    assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified SHAPE (size) must match %s. """ % (repr(input.shape[1:]))
+    assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified INPUT_SHAPE (size) = %r must match %s. """ % (INPUT_SHAPE, repr(input.shape[1:]))
 
     # RF1 -> conv_offset_range
 
-    assert isinstance(SHAPE[0], int)
-    assert isinstance(SHAPE[1], int)
-    assert isinstance(SHAPE[2], int)
+    assert isinstance(INPUT_SHAPE[0], int)
+    assert isinstance(INPUT_SHAPE[1], int)
+    assert isinstance(INPUT_SHAPE[2], int)
     assert isinstance(stride_xy[0], int)
     assert isinstance(stride_xy[1], int)
     assert len(stride_xy) == 2
     assert isinstance(conv_offset_range[0], int)
     assert isinstance(conv_offset_range[1], int)
+    assert conv_offset_range[1]+1 - conv_offset_range[0] >= 1
     assert len(conv_offset_range) == 2
+
+    assert tuple(input.shape[1:]) == INPUT_SHAPE
+    assert int(input.shape[1]) == INPUT_SHAPE[0] # W
+    assert int(input.shape[2]) == INPUT_SHAPE[1] # H
+    assert int(input.shape[3]) == INPUT_SHAPE[2] # RGB3
 
     #NEWSHAPE = (W-RF1+1,H-RF1+1,RGB3DIMS)
     #assert W-RF1+1 > 0, """RF size %d does not fit in W=%d""" % (RF1, W)
@@ -106,8 +112,8 @@ def make_conv_rf(input, SHAPE, conv_offset_range, stride_xy, nonlinearity1, lnam
             #for c in range(RGB3DIMS):
             #suminp = None
             suminp = 0.0
-            for dx in range(conv_offset_range[0], conv_offset_range[1], 1):
-                for dy in range(conv_offset_range[0], conv_offset_range[1], 1):
+            for dx in range(conv_offset_range[0], conv_offset_range[1]+1, 1):
+                for dy in range(conv_offset_range[0], conv_offset_range[1]+1, 1):
                     # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
                     # coords and index on input layer.
                     inp_x, inp_y = x+dx, y+dy
@@ -168,7 +174,9 @@ nonlinearity1 = tf.nn.relu
 print('L1')
 layer_h1 = make_conv_rf(input, (W,H,RGB3DIMS),  (-RF1,RF1), (1,1), tf.nn.relu, lname='H1')
 print('L2')
-layer_h2 = make_conv_rf(layer_h1, (int(W/1),int(H/1),RGB3DIMS), (-RF2, RF2), (2,2), tf.nn.relu, lname='H2')
+layer_h2 = make_conv_rf(layer_h1, (int(W/1),int(H/1),RGB3DIMS), (-3, 3), (2,2), tf.nn.relu, lname='H2')
+layer_h3 = make_conv_rf(layer_h2, (int(W/2),int(H/2),RGB3DIMS), (-3, 3), (2,2), tf.nn.relu, lname='H3')
+layer_h4 = make_conv_rf(layer_h3, (int(W/4),int(H/4),RGB3DIMS), (-3, 3), (2,2), tf.nn.relu, lname='H4')
 
 
 
