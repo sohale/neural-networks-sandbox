@@ -177,16 +177,15 @@ class MLNTopology():
         # connectivity_matrix: a sparse matrix of certain sort of indices. (address?)
         #   address: 1.tuple (of size len(shape))  2. string  3. raw_flat_index (int)
         self.matrices = []
-        #FIXME: move below
-        self.consistency_invarieance_check()
         # some layers can (suggested) to be arranged in shapes/tensors
 
         # both map(v.) and a map (n.)
         # self.coords_map = ...
         # self.layers_coord_dims = ..
 
-    #FIXME: rename
-    def consistency_invarieance_check(self):
+        self.consistency_invariance_check()
+
+    def consistency_invariance_check(self):
         nl = len(self.layers_shape)
         nl2 = len(self.layers_coord_dims)
         nl3 = len(self.matrices)
@@ -238,10 +237,10 @@ class MLNTopology():
         self.layers_coord_dims += [coord_dims]
         connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=int)
         self.matrices += [connectivity_matrix]
-        self.consistency_invarieance_check()
+        self.consistency_invariance_check()
 
     def iterate_connections(self, prev_layer, this_layer):
-        self.consistency_invarieance_check()
+        self.consistency_invariance_check()
         assert prev_layer == this_layer - 1
         (prev_layer, this_layer) = (this_layer - 1, this_layer)
         curr_shape = self.layers_shape[this_layer]
@@ -252,20 +251,18 @@ class MLNTopology():
         assert isinstance(h, int)
 
         for x in range(w):
-          #FIXME: indentation
-          for y in range(h):
-            matrix = self.matrices[prev_layer]
-            # connection_object_ref
-            conn_obj = matrix[x][y]
-            if conn_obj is None:
-                continue
-            (address1, address2) = (x,y)
-            yield address1, address2, conn_obj
+            for y in range(h):
+                matrix = self.matrices[prev_layer]
+                # connection_object_ref
+                conn_obj = matrix[x][y]
+                if conn_obj is None:
+                    continue
+                (address1, address2) = (x,y)
+                yield address1, address2, conn_obj
 
 
     def iterate_layers(self):
-        #FIXME: self
-        self.consistency_invarieance_check()
+        self.consistency_invariance_check()
         nl = len(self.layers_shape)
         for i in range(nl):
             numel = self.layers_shape[nl]
@@ -277,13 +274,13 @@ class MLNTopology():
         assert isinstance(address1_prev, int)
         assert isinstance(address2_next, int)
         # test
-        get_node_metadata(layer_no_next, address2_next)
-        get_node_metadata(prev_layer_no, address1_prev)
+        self.get_node_metadata(layer_no_next, address2_next)
+        self.get_node_metadata(prev_layer_no, address1_prev)
         matrix = self.matrices[prev_layer_no]
         assert matrix[address1_prev, address2_next] is None
         matrix[address1_prev][address2_next] = conn_obj
         assert conn_obj == 1
-        self.consistency_invarieance_check()
+        self.consistency_invariance_check()
 
     # deprecated. all layers are flat
     """ shape dims """
