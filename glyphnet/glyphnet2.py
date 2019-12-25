@@ -79,7 +79,6 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
     Wout = int((W + stride_xy[0]-1)/stride_xy[0])*stride_xy[0]
     Hout = int((H + stride_xy[1]-1)/stride_xy[1])*stride_xy[1]
     # RF1 -> conv_spread_range
-    print('Wout x Hout', (Wout, Hout), 'strides', stride_xy)
 
     assert isinstance(INPUT_SHAPE[0], int)
     assert isinstance(INPUT_SHAPE[1], int)
@@ -117,22 +116,18 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
       for x in range(0, Wout, stride_xy[0]):
         for y in range(0, Hout, stride_xy[1]):
           cuname1 = "x%dy%d"%(x,y)
-          print('cuname1', cuname1)
           with tf.variable_scope(cuname1):
             #for c in range(RGB3DIMS):
             #suminp = None
             suminp = 0.0
             for dx in range(conv_spread_range[0], conv_spread_range[1]+1, 1):
                 for dy in range(conv_spread_range[0], conv_spread_range[1]+1, 1):
-                    # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
                     # coords and index on input layer.
                     inp_x, inp_y = x+dx, y+dy
                     if inp_x < 0 or inp_x >= W:
-                        print('skipping inp_x', inp_x, '=', x,'+',dx, '<', W)
                         continue
                     assert W == input.shape[1]
                     if inp_y < 0 or inp_y >= H:
-                        print('skipping inp_y', inp_y, '=', y,'+',dy, '<', H)
                         continue
                     assert H == input.shape[2]
                     v1 = input[:, inp_x,inp_y, :]
@@ -152,14 +147,10 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
 
             #ll += [v1[:, None, :]]
             ll += [conv_unit_outp[:, None, :]] # prepare for row-like structure
-      print('len(ll)', len(ll))
       layer_h1 = tf.concat(ll, axis=1) # row: (W*H) x RGB3
-      print('len(ll) ->', layer_h1.shape)
 
-      #NEWRESHAPE = [-1, W-RF1+1,H-RF1+1,RGB3DIMS]
       NEWRESHAPE = [-1, int(Wout/stride_xy[0]), int(Hout/stride_xy[1]), RGB3DIMS]
       reshaped_hidden_layer = tf.reshape(layer_h1, NEWRESHAPE)
-      print('reshaped to', NEWRESHAPE,'->',reshaped_hidden_layer.shape)
 
       set_metadata_bulk(W,H, reshaped_hidden_layer)
 
@@ -199,22 +190,21 @@ def shape_div(L0_SHAPE, m, n):
 
 #shape_div(L0_SHAPE,1,1),
 layer_h1 = make_conv_rf(input, L0_SHAPE, (-RF1,RF1),   (1,1), tf.nn.relu, lname='H1')
-print('1>>>', layer_h1.shape)
-print('L2')
+print('L1>>>', layer_h1.shape)
 L1_SHAPE = shape_div(layer_h1.shape[1:], 1,1)
 #shape_div(L1_SHAPE,1,1),
 layer_h2 = make_conv_rf(layer_h1, L1_SHAPE, (-3, 3),   (2,2), tf.nn.relu, lname='H2')
-print('2>>>', layer_h2.shape)
+print('L2>>>', layer_h2.shape)
 L2_SHAPE = shape_div(layer_h2.shape[1:], 1,1)
 #L2OUT_SHAPE = shape_div(L2_SHAPE,2,1)  # shape_div(L0_SHAPE,2,2)
 #shape_div(L2_SHAPE,2,1),
 layer_h3 = make_conv_rf(layer_h2, L2_SHAPE, (-3, 3),   (2,2), tf.nn.relu, lname='H3')
-print('3>>>', layer_h3.shape)
+print('L3>>>', layer_h3.shape)
 L3_SHAPE = shape_div(layer_h3.shape[1:], 1,1) #shape_div(L0_SHAPE, 4,1)
 #L3OUT_SHAPE = shape_div(L0_SHAPE,4,1) # shape_div(L0_SHAPE,4,4)
 #shape_div(L3_SHAPE,2,1),
 layer_h4 = make_conv_rf(layer_h3, L3_SHAPE, (-3, 3),   (2,2), tf.nn.relu, lname='H4')
-print('4>>>', layer_h4.shape)
+print('L4>>>', layer_h4.shape)
 
 
 
