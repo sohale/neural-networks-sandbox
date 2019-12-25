@@ -65,12 +65,13 @@ HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
 
-def make_conv_rf(input, INPUT_SHAPE, conv_offset_range, stride_xy, nonlinearity1, lname):
+def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1, lname):
+    # conv_spread_range = conv_offset_range
     (W,H,RGB3DIMS) = INPUT_SHAPE
     print('input.shape for', lname, input.shape, ' asserting', tuple(input.shape[1:]), '==', (W,H,RGB3DIMS))
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified INPUT_SHAPE (size) = %r must match %s. """ % (INPUT_SHAPE, repr(input.shape[1:]))
 
-    # RF1 -> conv_offset_range
+    # RF1 -> conv_spread_range
 
     assert isinstance(INPUT_SHAPE[0], int)
     assert isinstance(INPUT_SHAPE[1], int)
@@ -78,10 +79,10 @@ def make_conv_rf(input, INPUT_SHAPE, conv_offset_range, stride_xy, nonlinearity1
     assert isinstance(stride_xy[0], int)
     assert isinstance(stride_xy[1], int)
     assert len(stride_xy) == 2
-    assert isinstance(conv_offset_range[0], int)
-    assert isinstance(conv_offset_range[1], int)
-    assert conv_offset_range[1]+1 - conv_offset_range[0] >= 1
-    assert len(conv_offset_range) == 2
+    assert isinstance(conv_spread_range[0], int)
+    assert isinstance(conv_spread_range[1], int)
+    assert conv_spread_range[1]+1 - conv_spread_range[0] >= 1
+    assert len(conv_spread_range) == 2
 
     assert tuple(input.shape[1:]) == INPUT_SHAPE
     assert int(input.shape[1]) == INPUT_SHAPE[0] # W
@@ -112,8 +113,8 @@ def make_conv_rf(input, INPUT_SHAPE, conv_offset_range, stride_xy, nonlinearity1
             #for c in range(RGB3DIMS):
             #suminp = None
             suminp = 0.0
-            for dx in range(conv_offset_range[0], conv_offset_range[1]+1, 1):
-                for dy in range(conv_offset_range[0], conv_offset_range[1]+1, 1):
+            for dx in range(conv_spread_range[0], conv_spread_range[1]+1, 1):
+                for dy in range(conv_spread_range[0], conv_spread_range[1]+1, 1):
                     # print('x,y,dx,dy  ', x,y,dx,dy, '  + -> ', x+dx, y+dy)
                     # coords and index on input layer.
                     inp_x, inp_y = x+dx, y+dy
