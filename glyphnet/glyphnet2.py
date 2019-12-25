@@ -64,12 +64,14 @@ PIXEL_DTYPE = tf.float32
 HL_DTYPE = tf.float32
 WEIGHT_DTYPE = tf.float32
 
-
+global weights_count
+weights_count = 0
 def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1, lname):
     # conv_spread_range = conv_offset_range
     (W,H,RGB3DIMS) = INPUT_SHAPE
     print('input.shape for', lname, input.shape, ' asserting', tuple(input.shape[1:]), '==', (W,H,RGB3DIMS))
     assert tuple(input.shape[1:]) == (W,H,RGB3DIMS), """ explicitl specified INPUT_SHAPE (size) = %r must match %s. """ % (INPUT_SHAPE, repr(input.shape[1:]))
+    global weights_count
 
     # RF1 -> conv_spread_range
 
@@ -128,6 +130,7 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
                     (x,y,c) = get_element_metadata(input, inp_x,inp_y)
                     randinitval = tf.random_uniform([1], -1, 1, seed=0)  # doesn accept trainable=False,
                     w1 = tf.Variable(initial_value=randinitval, trainable=True, dtype=WEIGHT_DTYPE)
+                    weights_count += 1
                     #if suminp is None:
                     #    suminp = w1 * v1
                     #else:
@@ -169,6 +172,8 @@ input = tf.placeholder(PIXEL_DTYPE, [None, W, H, RGB3DIMS], name='i1')
 #reshp = tf.reshape(input, [UNKNOWN_SIZE, W*H, RGB3DIMS])
 #output = reshp * 2
 set_metadata_bulk(W,H, input)
+
+weights_count = 0
 
 nonlinearity1 = tf.nn.relu
 #nonlinearity1 = tf.sigmoid
@@ -255,3 +260,5 @@ print(data_images_batch)
 print('Output: ---------------')
 print(out_data)
 
+# 309
+print('weights:', weights_count)
