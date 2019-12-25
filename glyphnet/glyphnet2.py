@@ -227,28 +227,23 @@ class MLNTopology():
                     assert (elem is None) or (elem is 1)
 
 
-    def layer_num_elem(new_layer_shape):
-        #FIXME: rename new_layer_shape
-        numel = self.layers_shape[new_layer_shape]
+    def layer_num_elem(self, layer_no):
+        numel = self.layers_shape[layer_no]
         assert isinstance(numel, int)
         return numel
 
-    def add_layer(new_layer_shape):
+    def add_layer(self, new_layer_shape, coord_dims):
         prev_layer_shape = self.layers_shape[-1]
         self.layers_shape += [new_layer_shape]
-        self.layers_coord_dims += [1]
+        self.layers_coord_dims += [coord_dims]
         connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=int)
         self.matrices += [connectivity_matrix]
         self.consistency_invarieance_check()
 
-    def iterate_connections(layer_no, prev_layer_no, ):
+    def iterate_connections(self, prev_layer, this_layer):
         self.consistency_invarieance_check()
-        #FIXME: reorder prev_ and next_
-        assert prev_layer_no == layer_no - 1
-        connection_object_ref = None # do we need this?
-
-        # FIXME: rename layer_no
-        (prev_layer, this_layer) = (layer_no - 1, layer_no)
+        assert prev_layer == this_layer - 1
+        (prev_layer, this_layer) = (this_layer - 1, this_layer)
         curr_shape = self.layers_shape[this_layer]
         prev_shape = self.layers_shape[prev_layer]
         w = curr_shape
@@ -260,15 +255,15 @@ class MLNTopology():
           #FIXME: indentation
           for y in range(h):
             matrix = self.matrices[prev_layer]
+            # connection_object_ref
             conn_obj = matrix[x][y]
             if conn_obj is None:
                 continue
             (address1, address2) = (x,y)
-            connection_object_ref =conn_obj
-            yield address1, address2, connection_object_ref
+            yield address1, address2, conn_obj
 
 
-    def iterate_layers():
+    def iterate_layers(self):
         #FIXME: self
         self.consistency_invarieance_check()
         nl = len(self.layers_shape)
@@ -277,7 +272,7 @@ class MLNTopology():
             yield i, numel
             # yield i, numel, i+1, next_layer_shape
 
-    def connect(prev_layer_no, address1_prev, address2_next, conn_obj):
+    def connect(self, prev_layer_no, address1_prev, address2_next, conn_obj):
         layer_no_next = prev_layer_no+1
         assert isinstance(address1_prev, int)
         assert isinstance(address2_next, int)
@@ -300,9 +295,8 @@ class MLNTopology():
             return 1
     """
 
-    def get_node_metadata(layer, address):
+    def get_node_metadata(self, layer, address):
         layer_no = layer
-        #self FIXME
         assert layer_no >= 0 and layer_no < len(self.layers_shape)
         dims = self.layers_coord_dims[layer_no]
         #self.layer_dim_names[0] = ['x', 'y', 'ch']
@@ -312,16 +306,11 @@ class MLNTopology():
         assert len(coords) == dims
         return coords
 
-    def get_layer_coord_system(layer):
+    def get_layer_coord_system(self, layer):
+        # typically: [3,1,1,1,...]  or [3,3,1,1,1,..]
         layer_no = layer
         dims = self.layers_coord_dims[layer_no]
         return dims
-        """
-        if layer_no == 1:
-            return 2+1
-        else:
-            return 1
-        """
 
 def build_tf_network(topology: MLNTopology):
     pass
