@@ -157,6 +157,76 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
     return reshaped_hidden_layer
 
     # why input has 54 outputs, while there are 25 elements only.
+
+
+# =================================================
+class MLNTopology():
+    INDEX_INT_TYPE = int
+    def __init__(self):
+        # alt: tuple(int), xor, np.array(int), xor: simply an int !
+        self.layers_shape = []
+
+        # nominal coord system dimensions: e.g. (x,y,ch) (theta,sigma,x,y,hue) (feature_id)
+        # i.e. for layer's intrinsic (functional) topology
+        self.layers_coord_dims = []
+
+        # connectivity_matrix: a sparse matrix of certain sort of indices. (address?)
+        #   address: 1.tuple (of size len(shape))  2. string  3. raw_flat_index (int)
+        self.matrices = []
+        self.consistency_invarieance_check()
+        # some layers can (suggested) to be arranged in shapes/tensors
+
+    def consistency_invarieance_check(self):
+        nl = len(self.layers_shape)
+        nl2 = len(self.layers_coord_dims)
+        nl3 = len(self.matrices)
+        assert nl == nl2
+        assert nl == nl3
+        for li in range(nl):
+            assert isinstance(self.layers_coord_dims[li], int)
+
+        for cli in range(1, nl):
+            curr_shape = self.layers_shape[cli]
+            prev_shape = self.layers_shape[cli - 1]
+            #assert curre_shape[0] == prev_shape[1]
+            assert self.matrices.shape == ()
+
+    def layer_num_elem(new_layer_shape):
+        ;
+    def add_layer(new_layer_shape):
+        prev_layer_shape = self.layers_shape[-1]
+        self.layers_shape += [new_layer_shape]
+        self.layers_coord_dims += [1]
+        connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=)
+        self.matrices += [connectivity_matrix]
+
+    def iterate_connections(layer_no, prev_layer_no, ):
+        assert prev_layer_no == layer_no - 1
+        connection_object_ref = None # do we need this?
+        for i in range(1):
+            yield address1, address2, connection_object_ref
+
+
+    def iterate_layers():
+        for i in range(1):
+            yield address1, address2, connection_object_ref
+
+    def connect(layer_no, address, ):
+
+    """ shape dims """
+    def get_address_indices(layer_no):
+        if layer_no == 1:
+            return 2+1
+        else:
+            return 1
+    def get_node_metadata(layer, address):
+        return {x: , y:}
+    def get_layer_coord_system(layer):
+        if layer_no == 1:
+            return 2+1
+        else:
+            return 1
+
 # =================================================
 
 # Fixme: the RGB needs to annihilate at level 1
