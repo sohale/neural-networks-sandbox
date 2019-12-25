@@ -160,22 +160,32 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
 
 
 # =================================================
+from typing import List
+from typing import TypeVar, Generic
+
 class MLNTopology():
     INDEX_INT_TYPE = int
     def __init__(self):
         # alt: tuple(int), xor, np.array(int), xor: simply an int !
-        self.layers_shape = []
+        self.layers_shape = []  #  : List[int]
 
         # nominal coord system dimensions: e.g. (x,y,ch) (theta,sigma,x,y,hue) (feature_id)
         # i.e. for layer's intrinsic (functional) topology
+        #  List[int]
         self.layers_coord_dims = []
 
         # connectivity_matrix: a sparse matrix of certain sort of indices. (address?)
         #   address: 1.tuple (of size len(shape))  2. string  3. raw_flat_index (int)
         self.matrices = []
+        #FIXME: move below
         self.consistency_invarieance_check()
         # some layers can (suggested) to be arranged in shapes/tensors
 
+        # both map(v.) and a map (n.)
+        # self.coords_map = ...
+        # self.layers_coord_dims = ..
+
+    #FIXME: rename
     def consistency_invarieance_check(self):
         nl = len(self.layers_shape)
         nl2 = len(self.layers_coord_dims)
@@ -183,50 +193,138 @@ class MLNTopology():
         assert nl == nl2
         assert nl == nl3
         for li in range(nl):
+            neurons_count = self.layers_shape[li]
+            assert isinstance(self.layers_shape[li], int)
             assert isinstance(self.layers_coord_dims[li], int)
+            assert len(self.coords_map[li]) == neurons_count
+            # assert len(self.layers_coord_dims[li]) > 0
+            for ni in range(neurons_count):
+                address = ni
+                coords = self.coords_map[li][address]
+                assert len(coords) == self.layers_coord_dims[li]
 
+
+        assert len(self.matrices) == nl
         for cli in range(1, nl):
-            curr_shape = self.layers_shape[cli]
-            prev_shape = self.layers_shape[cli - 1]
+            this_layer = cli
+            prev_layer = cli-1
+
+            curr_shape = self.layers_shape[this_layer]
+            prev_shape = self.layers_shape[prev_layer]
+            assert isinstance(curr_shape, int)
+            assert isinstance(prev_shape, int)
             #assert curre_shape[0] == prev_shape[1]
+            #FIXME:
             assert self.matrices.shape == ()
+            w = curr_shape
+            h = prev_shape
+            # self.matrices[layer] : List[List[int]]
+            assert w == len(self.matrices[cli])
+            for x in range(w):
+                assert len(self.matrices[cli][x]) == h
+                for y in range(h):
+                    elem = self.matrices[cli][x][y]
+                    assert (elem is None) or (elem is 1)
+
 
     def layer_num_elem(new_layer_shape):
-        ;
+        #FIXME: rename new_layer_shape
+        numel = self.layers_shape[new_layer_shape]
+        assert isinstance(numel, int)
+        return numel
+
     def add_layer(new_layer_shape):
         prev_layer_shape = self.layers_shape[-1]
         self.layers_shape += [new_layer_shape]
         self.layers_coord_dims += [1]
-        connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=)
+        connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=int)
         self.matrices += [connectivity_matrix]
+        self.consistency_invarieance_check()
 
     def iterate_connections(layer_no, prev_layer_no, ):
+        self.consistency_invarieance_check()
+        #FIXME: reorder prev_ and next_
         assert prev_layer_no == layer_no - 1
         connection_object_ref = None # do we need this?
-        for i in range(1):
+
+        # FIXME: rename layer_no
+        (prev_layer, this_layer) = (layer_no - 1, layer_no)
+        curr_shape = self.layers_shape[this_layer]
+        prev_shape = self.layers_shape[prev_layer]
+        w = curr_shape
+        h = prev_shape
+        assert isinstance(w, int)
+        assert isinstance(h, int)
+
+        for x in range(w):
+          #FIXME: indentation
+          for y in range(h):
+            matrix = self.matrices[prev_layer]
+            conn_obj = matrix[x][y]
+            if conn_obj is None:
+                continue
+            (address1, address2) = (x,y)
+            connection_object_ref =conn_obj
             yield address1, address2, connection_object_ref
 
 
     def iterate_layers():
-        for i in range(1):
-            yield address1, address2, connection_object_ref
+        #FIXME: self
+        self.consistency_invarieance_check()
+        nl = len(self.layers_shape)
+        for i in range(nl):
+            numel = self.layers_shape[nl]
+            yield i, numel
+            # yield i, numel, i+1, next_layer_shape
 
-    def connect(layer_no, address, ):
+    def connect(prev_layer_no, address1_prev, address2_next, conn_obj):
+        layer_no_next = prev_layer_no+1
+        assert isinstance(address1_prev, int)
+        assert isinstance(address2_next, int)
+        # test
+        get_node_metadata(layer_no_next, address2_next)
+        get_node_metadata(prev_layer_no, address1_prev)
+        matrix = self.matrices[prev_layer_no]
+        assert matrix[address1_prev, address2_next] is None
+        matrix[address1_prev][address2_next] = conn_obj
+        assert conn_obj == 1
+        self.consistency_invarieance_check()
 
+    # deprecated. all layers are flat
     """ shape dims """
+    """
     def get_address_indices(layer_no):
         if layer_no == 1:
             return 2+1
         else:
             return 1
+    """
+
     def get_node_metadata(layer, address):
-        return {x: , y:}
+        layer_no = layer
+        #self FIXME
+        assert layer_no >= 0 and layer_no < len(self.layers_shape)
+        dims = self.layers_coord_dims[layer_no]
+        #self.layer_dim_names[0] = ['x', 'y', 'ch']
+        #return {x: , y:}
+        assert isinstance(address, int)
+        coords = self.coords_map[layer_no][address]
+        assert len(coords) == dims
+        return coords
+
     def get_layer_coord_system(layer):
+        layer_no = layer
+        dims = self.layers_coord_dims[layer_no]
+        return dims
+        """
         if layer_no == 1:
             return 2+1
         else:
             return 1
+        """
 
+def build_tf_network(topology: MLNTopology):
+    pass
 # =================================================
 
 # Fixme: the RGB needs to annihilate at level 1
