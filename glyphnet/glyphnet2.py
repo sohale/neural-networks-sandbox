@@ -303,11 +303,26 @@ class MLNTopology():
         assert len(coords) == dims
         return coords
 
-    def get_layer_coord_system(self, layer):
+    def get_layer_coord_system(self, layer_no):
         # typically: [3,1,1,1,...]  or [3,3,1,1,1,..]
-        layer_no = layer
         dims = self.layers_coord_dims[layer_no]
         return dims
+
+def test_MLNTopology():
+    expected_shapes = [15*15*3,1]
+    expected_coords = [3,1]
+
+    topology = MLNTopology()
+    (W,H,ChRGB) = (15,15,3)
+    topology.add_layer(W*H*ChRGB, 3)
+    topology.add_layer(128, 1)
+    for l, numel in topology.iterate_layers():
+        dims = topology.get_layer_coord_system()
+        assert expected_shapes[l] == numel
+        assert expected_coords[l] == dims
+
+test_MLNTopology()
+print('fine')
 
 def build_tf_network(topology: MLNTopology):
     pass
