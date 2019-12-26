@@ -163,6 +163,66 @@ def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1
 from typing import List
 from typing import TypeVar, Generic
 
+"""
+    Maintains a 3D array as a list of list,
+    with guarantee that all rows are of the same length
+    (i.e. `h`)
+"""
+class matrixll:
+    @staticmethod
+    def iter_rows(m, h):
+        assert isinstance(m, list)
+        w = len(m)
+        for x in range(w):
+            row = m[x]
+            assert isinstance(row, list)
+            assert len(row) == h
+            yield x, row
+
+    @staticmethod
+    def iter_elems(m, h):
+        matrixll.check(m, -1, h)
+        w = len(m)
+        for x in range(w):
+            assert isinstance(m[x], list)
+            assert len(m[x]) == h
+            for y in range(h):
+                elem = m[x][y]
+                yield x,y, elem
+
+    @staticmethod
+    def check(m, w1, h):
+        assert isinstance(m, list)
+        assert w1 == -1
+        w = len(m)
+        for x in range(w):
+            assert isinstance(m[x], list)
+            assert len(m[x]) == h
+            for y in range(h):
+                elem = m[x][y]
+                assert (elem is None) or (elem is 1)
+
+    @staticmethod
+    def create_matrixll(w,h, default_value):
+        # np.ndarray((w,h), dtype=int)
+        m = []
+        for x in range(w):
+            m += [[]]
+            for y in range(h):
+                assert len(m[x]) == y
+                m[x] += [default_value]
+        return m
+
+    @staticmethod
+    def shape(m, h):
+        w = len(m)
+        if h == 'derive':
+            if w == 0:
+                raise Exception('cannot derive shape from a matrix of 0 rows: 0x?')
+            h = len(m[0])
+        matrixll.check(m,-1, h)
+        return (w,h)
+
 class MLNTopology():
     INDEX_INT_TYPE = int
     def __init__(self):
@@ -180,8 +240,7 @@ class MLNTopology():
         # some layers can (suggested) to be arranged in shapes/tensors
 
         # both map(v.) and a map (n.)
-        # self.coords_map = ...
-        # self.layers_coord_dims = ..
+        self.coords_map = []
 
         self.consistency_invariance_check()
 
@@ -189,8 +248,12 @@ class MLNTopology():
         nl = len(self.layers_shape)
         nl2 = len(self.layers_coord_dims)
         nl3 = len(self.matrices)
+        print('ml3',nl3, ' nl', nl)
         assert nl == nl2
-        assert nl == nl3
+        if nl == 0:
+            assert nl3 == 0
+        else:
+            assert nl3 == nl-1
         for li in range(nl):
             neurons_count = self.layers_shape[li]
             assert isinstance(self.layers_shape[li], int)
@@ -198,10 +261,10 @@ class MLNTopology():
             assert len(self.coords_map[li]) == neurons_count
             # assert len(self.layers_coord_dims[li]) > 0
             for ni in range(neurons_count):
-                address = ni
+                address = ni # address is simply the node (neuron) index, i.e. an `int`
                 coords = self.coords_map[li][address]
+                assert isinstance(coords, tuple)
                 assert len(coords) == self.layers_coord_dims[li]
-
 
         assert len(self.matrices) == nl
         for cli in range(1, nl):
@@ -219,24 +282,36 @@ class MLNTopology():
             h = prev_shape
             # self.matrices[layer] : List[List[int]]
             assert w == len(self.matrices[cli])
-            for x in range(w):
-                assert len(self.matrices[cli][x]) == h
-                for y in range(h):
-                    elem = self.matrices[cli][x][y]
-                    assert (elem is None) or (elem is 1)
+            matrixll.check(self.matrices[cli], w, h)
 
-
+    def report(self, internals):
+        nl = len(self.layers_shape)
+        print('Report for topology (of %d layers):' % nl, self)
+        print('   shape', self.layers_shape)
+        print('   coords', self.layers_coord_dims)
+        if internals:
+            for li in range(nl):
+                print('      layer: ', li, 'connections:', matrixll.shape(self.matrices[li], 'derive'))
+                print('                        coords for %d entries' % len(self.coords_map[li]))
     def layer_num_elem(self, layer_no):
         numel = self.layers_shape[layer_no]
         assert isinstance(numel, int)
         return numel
 
     def add_layer(self, new_layer_shape, coord_dims):
-        prev_layer_shape = self.layers_shape[-1]
+        numnodes = new_layer_shape
+        assert isinstance(numnodes, int)
         self.layers_shape += [new_layer_shape]
         self.layers_coord_dims += [coord_dims]
-        connectivity_matrix = np.ndarray((np.prod(prev_layer_shape), np.prod(new_layer_shape)), dtype=int)
-        self.matrices += [connectivity_matrix]
+        self.coords_map += [[(i,) for i in range(numnodes)]]
+        nl = len(self.layers_shape)
+        if nl > 0:
+            prev_layer_shape = self.layers_shape[-1]
+            (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
+            connectivity_matrix = matrixll.create_matrixll(w,h, None)
+            print('connectivity_matrix', matrixll.shape(connectivity_matrix, h))
+            self.matrices += [connectivity_matrix]
+        self.report(True)
         self.consistency_invariance_check()
 
     def iterate_connections(self, prev_layer, this_layer):
@@ -315,7 +390,9 @@ def test_MLNTopology():
     topology = MLNTopology()
     (W,H,ChRGB) = (15,15,3)
     topology.add_layer(W*H*ChRGB, 3)
+    topology.consistency_invariance_check()
     topology.add_layer(128, 1)
+    topology.consistency_invariance_check()
     for l, numel in topology.iterate_layers():
         dims = topology.get_layer_coord_system()
         assert expected_shapes[l] == numel
