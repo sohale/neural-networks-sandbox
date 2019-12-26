@@ -239,7 +239,7 @@ class MLNTopology():
         self.matrices = []
         # some layers can (suggested) to be arranged in shapes/tensors
 
-        # both map(v.) and a map (n.)
+        # "map" as both map(v.) and a map (n.)
         self.coords_map = []
 
         self.consistency_invariance_check()
@@ -264,6 +264,7 @@ class MLNTopology():
                 address = ni # address is simply the node (neuron) index, i.e. an `int`
                 coords = self.coords_map[li][address]
                 assert isinstance(coords, tuple)
+                print(len(coords), self.layers_coord_dims[li])
                 assert len(coords) == self.layers_coord_dims[li]
 
         assert len(self.matrices) == nl
@@ -290,21 +291,30 @@ class MLNTopology():
         print('   shape', self.layers_shape)
         print('   coords', self.layers_coord_dims)
         if internals:
-            for li in range(nl):
-                print('      layer: ', li, 'connections:', matrixll.shape(self.matrices[li], 'derive'))
+            print('self.matrices', len(self.matrices), self.matrices)
+            print('self.coords_map', len(self.coords_map), self.coords_map)
+            for li in range(nl-1): # iterate connection matrices
+                m = self.matrices[li]
+                print('m:', len(m))
+                print('m[0]:', len(m[0]))
+                print('      layer: ', li, 'connections:', matrixll.shape(m, 'derive'))
+            for li in range(nl): # iterate layers
+                print('        self.coords_map[li]', len(self.coords_map[li]))
                 print('                        coords for %d entries' % len(self.coords_map[li]))
     def layer_num_elem(self, layer_no):
         numel = self.layers_shape[layer_no]
         assert isinstance(numel, int)
         return numel
 
-    def add_layer(self, new_layer_shape, coord_dims):
+    def add_layer(self, new_layer_shape, coord_dims, coord_iterator):
         numnodes = new_layer_shape
         assert isinstance(numnodes, int)
+        nl = len(self.layers_shape)
         self.layers_shape += [new_layer_shape]
         self.layers_coord_dims += [coord_dims]
-        self.coords_map += [[(i,) for i in range(numnodes)]]
-        nl = len(self.layers_shape)
+        self.coords_map += [None]
+        self.coords_map[-1] = [tuple(tpl) for tpl in coord_iterator]
+         # [[(i,) for i in range(numnodes)]]
         if nl > 0:
             prev_layer_shape = self.layers_shape[-1]
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
@@ -389,15 +399,42 @@ def test_MLNTopology():
 
     topology = MLNTopology()
     (W,H,ChRGB) = (15,15,3)
-    topology.add_layer(W*H*ChRGB, 3)
+    topology.add_layer(W*H*ChRGB, 1, range(W*H*ChRGB))
     topology.consistency_invariance_check()
-    topology.add_layer(128, 1)
+    topology.add_layer(128, 1, range(128))
     topology.consistency_invariance_check()
+
+    topology.add_layer(W*H*ChRGB, 3, tiple_iter((W, H, ChRGB))
+    topology.consistency_invariance_check()
+
     for l, numel in topology.iterate_layers():
         dims = topology.get_layer_coord_system()
         assert expected_shapes[l] == numel
         assert expected_coords[l] == dims
 
+
+""" Iterated over indices of a tensor with given shape """
+def tuple_iter(triple):
+    #(W,H,ChRGB) = triple
+    if len(triple) == 0:
+        raise Exception('use tuple of len > 0')
+    if len(triple) == 1:
+        yield triple[0]
+        return
+    dim1 = triple[0]
+    for i in range(dim1):
+        for y in tuple_iter((triple[1:])):
+            yield y
+def test_tuple_iter():
+    def test_tuple_iter_case(shape, expected):
+        actual = [i for i in tuple_iter(shape)]
+        assert repr(actual) == repr(expected)
+    test_tuple_iter_case((1,), [(0,)]):
+    test_tuple_iter_case((1,1), [(0,0)]):
+    test_tuple_iter_case((1,1,1), [(0,0,0)]):
+    test_tuple_iter_case((2,2,1), [(0,0,0), (0,1,0), (1,0,0), (1,1,0)]):
+
+test_tuple_iter()
 test_MLNTopology()
 print('fine')
 
