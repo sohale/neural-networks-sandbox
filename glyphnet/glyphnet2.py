@@ -404,7 +404,7 @@ def test_MLNTopology():
     topology.add_layer(128, 1, range(128))
     topology.consistency_invariance_check()
 
-    topology.add_layer(W*H*ChRGB, 3, tiple_iter((W, H, ChRGB))
+    topology.add_layer(W*H*ChRGB, 3, tiple_iter((W, H, ChRGB)))
     topology.consistency_invariance_check()
 
     for l, numel in topology.iterate_layers():
@@ -414,25 +414,33 @@ def test_MLNTopology():
 
 
 """ Iterated over indices of a tensor with given shape """
-def tuple_iter(triple):
+def tuple_iter(triple, prefix=()):
     #(W,H,ChRGB) = triple
+    assert isinstance(triple, tuple)
     if len(triple) == 0:
         raise Exception('use tuple of len > 0')
     if len(triple) == 1:
-        yield triple[0]
+        dim1 = triple[0]
+        for i in range(dim1):
+            yield tuple(prefix) + (i,)
         return
     dim1 = triple[0]
     for i in range(dim1):
-        for y in tuple_iter((triple[1:])):
+        for y in tuple_iter((triple[1:]), prefix=prefix + (i,)):
+            #yield (i,) + y
             yield y
+
 def test_tuple_iter():
     def test_tuple_iter_case(shape, expected):
-        actual = [i for i in tuple_iter(shape)]
+        actual = [tup for tup in tuple_iter(shape)]
+        print('actual', actual)
+        print('assert', repr(actual), '==', repr(expected))
         assert repr(actual) == repr(expected)
-    test_tuple_iter_case((1,), [(0,)]):
-    test_tuple_iter_case((1,1), [(0,0)]):
-    test_tuple_iter_case((1,1,1), [(0,0,0)]):
-    test_tuple_iter_case((2,2,1), [(0,0,0), (0,1,0), (1,0,0), (1,1,0)]):
+    test_tuple_iter_case((1,), [(0,)])
+    test_tuple_iter_case((1,1), [(0,0)])
+    test_tuple_iter_case((1,1,1), [(0,0,0)])
+    test_tuple_iter_case((2,2,1), [(0,0,0), (0,1,0), (1,0,0), (1,1,0)])
+    test_tuple_iter_case((1,1,3), [(0,0,0), (0,0,1), (0,0,2)])
 
 test_tuple_iter()
 test_MLNTopology()
