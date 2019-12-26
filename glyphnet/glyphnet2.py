@@ -258,6 +258,7 @@ class MLNTopology():
             neurons_count = self.layers_shape[li]
             assert isinstance(self.layers_shape[li], int)
             assert isinstance(self.layers_coord_dims[li], int)
+            print('a', len(self.coords_map[li]), neurons_count)
             assert len(self.coords_map[li]) == neurons_count
             # assert len(self.layers_coord_dims[li]) > 0
             for ni in range(neurons_count):
@@ -267,7 +268,8 @@ class MLNTopology():
                 print(len(coords), self.layers_coord_dims[li])
                 assert len(coords) == self.layers_coord_dims[li]
 
-        assert len(self.matrices) == nl
+        if nl > 0:
+            assert len(self.matrices) == nl-1
         for cli in range(1, nl):
             this_layer = cli
             prev_layer = cli-1
@@ -313,7 +315,7 @@ class MLNTopology():
         self.layers_shape += [new_layer_shape]
         self.layers_coord_dims += [coord_dims]
         self.coords_map += [None]
-        self.coords_map[-1] = [tuple(tpl) for tpl in coord_iterator]
+        self.coords_map[-1] = [tpl for tpl in coord_iterator]
          # [[(i,) for i in range(numnodes)]]
         if nl > 0:
             prev_layer_shape = self.layers_shape[-1]
@@ -399,12 +401,14 @@ def test_MLNTopology():
 
     topology = MLNTopology()
     (W,H,ChRGB) = (15,15,3)
-    topology.add_layer(W*H*ChRGB, 1, range(W*H*ChRGB))
+    topology.add_layer(W*H*ChRGB, 1, tuple_iter((W*H*ChRGB,)))
     topology.consistency_invariance_check()
-    topology.add_layer(128, 1, range(128))
+    topology.add_layer(128, 1, tuple_iter((128,)))
     topology.consistency_invariance_check()
 
-    topology.add_layer(W*H*ChRGB, 3, tiple_iter((W, H, ChRGB)))
+    for c in tuple_iter((W, H, ChRGB)):
+        print(c)
+    topology.add_layer(W*H*ChRGB, 3, tuple_iter((W, H, ChRGB)))
     topology.consistency_invariance_check()
 
     for l, numel in topology.iterate_layers():
