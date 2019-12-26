@@ -185,7 +185,7 @@ class matrixll:
         w = len(m)
         for x in range(w):
             assert isinstance(m[x], list)
-            assert len(m[x]) == h, "Matrix not square(1), or incorrect expewcted h=%d (actual=%d at row %d)"%(h, len(m[x]), x)
+            assert len(m[x]) == h, "Matrix not square(A), or incorrect expewcted h=%d (actual=%d at row %d)"%(h, len(m[x]), x)
             for y in range(h):
                 elem = m[x][y]
                 yield x,y, elem
@@ -197,7 +197,7 @@ class matrixll:
         w = len(m)
         for x in range(w):
             assert isinstance(m[x], list)
-            assert len(m[x]) == h, "Matrix not square(2), or incorrect expected h=%d (actual=%d at row %d)"%(h, len(m[x]), x)
+            assert len(m[x]) == h, "Matrix not square(B), or incorrect expected h=%d (actual=%d at row %d)"%(h, len(m[x]), x)
 
             for y in range(h):
                 elem = m[x][y]
@@ -275,13 +275,14 @@ class MLNTopology():
             next_layer = cli
             prev_layer = cli-1
 
-            curr_shape = self.layers_shape[next_layer]
+            next_shape = self.layers_shape[next_layer]
             prev_shape = self.layers_shape[prev_layer]
-            assert isinstance(curr_shape, int)
+            assert isinstance(next_shape, int)
             assert isinstance(prev_shape, int)
-            w = curr_shape
-            h = prev_shape
+            h = next_shape
+            w = prev_shape
             # self.matrices[layer] : List[List[int]]
+            print(w, '??==', len(self.matrices[prev_layer]))
             assert w == len(self.matrices[prev_layer])
             matrixll.check(self.matrices[prev_layer], -1, h)
 
@@ -320,6 +321,7 @@ class MLNTopology():
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
             connectivity_matrix = matrixll.create_matrixll(w,h, None)
             print('connectivity_matrix', matrixll.shape(connectivity_matrix, h))
+            assert matrixll.shape(connectivity_matrix, 'derive') == (w,h)
             self.matrices += [connectivity_matrix]
         self.report(True)
         self.consistency_invariance_check()
@@ -328,9 +330,9 @@ class MLNTopology():
         self.consistency_invariance_check()
         assert prev_layer == this_layer - 1
         (prev_layer, this_layer) = (this_layer - 1, this_layer)
-        curr_shape = self.layers_shape[this_layer]
+        next_shape = self.layers_shape[this_layer]
         prev_shape = self.layers_shape[prev_layer]
-        w = curr_shape
+        w = next_shape
         h = prev_shape
         assert isinstance(w, int)
         assert isinstance(h, int)
