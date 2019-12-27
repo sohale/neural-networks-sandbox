@@ -266,7 +266,7 @@ class MLNTopology():
                 address = ni # address is simply the node (neuron) index, i.e. an `int`
                 coords = self.coords_map[li][address]
                 assert isinstance(coords, tuple)
-                print(len(coords), self.layers_coord_dims[li])
+                #print(len(coords), self.layers_coord_dims[li])
                 assert len(coords) == self.layers_coord_dims[li]
 
         if nl > 0:
@@ -282,9 +282,10 @@ class MLNTopology():
             h = next_shape
             w = prev_shape
             # self.matrices[layer] : List[List[int]]
-            print(w, '??==', len(self.matrices[prev_layer]))
-            assert w == len(self.matrices[prev_layer])
-            matrixll.check(self.matrices[prev_layer], -1, h)
+            m = self.matrices[prev_layer]
+            print(w, '??==', len(m), matrixll.shape(m, 'derive'))
+            assert w == len(m)
+            matrixll.check(m, -1, h)
 
     def report(self, internals):
         nl = len(self.layers_shape)
@@ -292,8 +293,8 @@ class MLNTopology():
         print('   shape', self.layers_shape)
         print('   coords', self.layers_coord_dims)
         if internals:
-            print('self.matrices', len(self.matrices), self.matrices)
-            print('self.coords_map', len(self.coords_map), self.coords_map)
+            #print('self.matrices', len(self.matrices), self.matrices) # too long
+            #print('self.coords_map', len(self.coords_map), self.coords_map) # too long
             for li in range(nl-1): # iterate connection matrices
                 m = self.matrices[li]
                 print('m:', len(m))
@@ -317,7 +318,7 @@ class MLNTopology():
         self.coords_map[-1] = [tpl for tpl in coord_iterator]
          # [[(i,) for i in range(numnodes)]]
         if nl > 0:
-            prev_layer_shape = self.layers_shape[-1]
+            prev_layer_shape = self.layers_shape[-2]
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
             connectivity_matrix = matrixll.create_matrixll(w,h, None)
             print('connectivity_matrix', matrixll.shape(connectivity_matrix, h))
@@ -352,7 +353,7 @@ class MLNTopology():
         self.consistency_invariance_check()
         nl = len(self.layers_shape)
         for i in range(nl):
-            numel = self.layers_shape[nl]
+            numel = self.layers_shape[i]
             yield i, numel
             # yield i, numel, i+1, next_layer_shape
 
@@ -396,8 +397,8 @@ class MLNTopology():
         return dims
 
 def test_MLNTopology():
-    expected_shapes = [15*15*3,1]
-    expected_coords = [3,1]
+    expected_shapes = [15*15*3, 128, 15*15*3]
+    expected_coords = [1, 1, 3]
 
     topology = MLNTopology()
     (W,H,ChRGB) = (15,15,3)
@@ -412,7 +413,7 @@ def test_MLNTopology():
     topology.consistency_invariance_check()
 
     for l, numel in topology.iterate_layers():
-        dims = topology.get_layer_coord_system()
+        dims = topology.get_layer_coord_system(l)
         assert expected_shapes[l] == numel
         assert expected_coords[l] == dims
 
@@ -448,7 +449,7 @@ def test_tuple_iter():
 
 test_tuple_iter()
 test_MLNTopology()
-print('fine')
+print('unit tests passed. fine')
 
 def build_tf_network(topology: MLNTopology):
     pass
