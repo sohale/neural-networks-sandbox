@@ -30,6 +30,8 @@ simple_triangles = geometry_maker.simple_triangles
 import mln_topology
 MLNTopology = mln_topology.MLNTopology
 
+import wireup_mltopology
+
 exit()
 
 
@@ -77,6 +79,8 @@ WEIGHT_DTYPE = tf.float32
 
 global weights_count
 weights_count = 0
+
+
 def make_conv_rf(input, INPUT_SHAPE, conv_spread_range, stride_xy, nonlinearity1, lname):
     # conv_spread_range = conv_offset_range
     (W,H,RGB3DIMS) = INPUT_SHAPE
