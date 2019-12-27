@@ -120,6 +120,11 @@ class MLNTopology():
         for x in range(w):
             for y in range(h):
                 matrix = self.matrices[prev_layer]
+                print('matrix', repr(matrix)[:10], '...   x',x, 'y', y)
+                d = matrixll.shape(matrix, 'derive')
+                print('dims', d, '(w,h)', (w,h))
+                assert d == (w,h)
+
                 # connection_object_ref
                 conn_obj = matrix[x][y]
                 if conn_obj is None:
@@ -136,7 +141,7 @@ class MLNTopology():
             yield i, numel
             # yield i, numel, i+1, next_layer_shape
 
-    def connect(self, prev_layer_no, address1_prev, address2_next, conn_obj):
+    def connect(self, prev_layer_no, address1_prev, address2_next, conn_obj, check=True):
         layer_no_next = prev_layer_no+1
         assert isinstance(address1_prev, int)
         assert isinstance(address2_next, int)
@@ -147,7 +152,33 @@ class MLNTopology():
         assert matrix[address1_prev, address2_next] is None
         matrix[address1_prev][address2_next] = conn_obj
         assert conn_obj == 1
+        if check:
+            self.consistency_invariance_check()
+
+    """
+    Uses synaptic prune rule for connectivity:
+    prune_rule = synaptic_prune_rule
+    Arrows from lower layer index towards higher
+    """
+    def connect_all(self, prev_layer_no, next_layer_no, prune_rule):
+        assert next_layer_no == prev_layer_no+1, 'only MLP-style is allowed: connections must between consecutive layers only'
+        next_shape_int = self.layers_shape[next_layer_no]
+        prev_shape_int = self.layers_shape[prev_layer_no]
+        coords_next = self.coords_map[next_layer_no]
+        coords_prev = self.coords_map[prev_layer_no]
+        assert isinstance(next_shape_int, int)
+        for i_next in range(next_shape_int):
+            # prev_layer_count = prev_shape_int
+            for j_prev in range(prev_shape_int):
+                coord_next = coords_next[i_next]
+                coord_prev = coords_prev[j_prev]
+                # apply synaptic prune rule for connectivity:
+                if not prune_rule(coord_prev, coord_next):
+                    conn_obj = 1
+                    self.connect(prev_layer_no, j_prev, i_next, conn_obj, check=False)
         self.consistency_invariance_check()
+
+
 
     # deprecated. all layers are flat
     """ shape dims """
@@ -175,6 +206,18 @@ class MLNTopology():
         dims = self.layers_coord_dims[layer_no]
         return dims
 
+# utilities
+def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
+    (_X, _Y, _RGB) = (0,1,2)
+    # radius = 3.0
+    topo.connect_all(prev_layer_no, next_layer_no,
+        lambda coord1, coord2:
+            (coord1[_X] - coord2[_X]) ** 2 +
+            (coord1[_Y] - coord2[_Y]) ** 2
+            >
+            radius ** 2
+    )
+
 def test_MLNTopology():
     expected_shapes = [15*15*3, 128, 15*15*3]
     expected_coords = [1, 1, 3]
@@ -195,6 +238,24 @@ def test_MLNTopology():
         dims = topology.get_layer_coord_system(l)
         assert expected_shapes[l] == numel
         assert expected_coords[l] == dims
+
+    for i,j,_ in topology.iterate_connections(0,1):
+        raise Exception('no connection should exist yet')
+    for i,j,_ in topology.iterate_connections(1,2):
+        raise Exception('no connection should exist yet')
+
+    topology.connect_all(1,2, lambda c1,c2: True )
+    connect_based_on_distance(topology, 0,1, 3.0)
+
+    ctr1 = 0
+    for i,j,_ in topology.iterate_connections(0,1):
+        ctr1 += 1
+
+    ctr2 = 0
+    for i,j,_ in topology.iterate_connections(1,2):
+        ctr2 += 1
+    print('ctr1', ctr1)
+    print('ctr2', ctr2)
 
 
 """ Iterated over indices of a tensor with given shape """
@@ -220,6 +281,7 @@ def test_tuple_iter():
         print('actual', actual)
         print('assert', repr(actual), '==', repr(expected))
         assert repr(actual) == repr(expected)
+
     test_tuple_iter_case((1,), [(0,)])
     test_tuple_iter_case((1,1), [(0,0)])
     test_tuple_iter_case((1,1,1), [(0,0,0)])
