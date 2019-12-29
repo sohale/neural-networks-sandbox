@@ -28,7 +28,6 @@ class MLNTopology():
         nl = len(self.layers_shape)
         nl2 = len(self.layers_coord_dims)
         nl3 = len(self.matrices)
-        print('ml3',nl3, ' nl', nl)
         assert nl == nl2
         if nl == 0:
             assert nl3 == 0
@@ -64,26 +63,27 @@ class MLNTopology():
             w = prev_shape
             # self.matrices[layer] : List[List[int]]
             m = self.matrices[prev_layer]
-            print(w, '??==', len(m), matrixll.shape(m, 'derive'))
             assert w == len(m)
             matrixll.check(m, -1, h)
 
     def report(self, internals):
         nl = len(self.layers_shape)
+        indent = '   '
+        indent2 = '      '
         print('Report for topology (of %d layers):' % nl, self)
-        print('   shape', self.layers_shape)
-        print('   coords', self.layers_coord_dims)
+        print(indent, 'shape', self.layers_shape)
+        print(indent, 'coords', self.layers_coord_dims)
         if internals:
             #print('self.matrices', len(self.matrices), self.matrices) # too long
             #print('self.coords_map', len(self.coords_map), self.coords_map) # too long
             for li in range(nl-1): # iterate connection matrices
                 m = self.matrices[li]
-                print('m:', len(m))
-                print('m[0]:', len(m[0]))
-                print('      layer: ', li, 'connections:', matrixll.shape(m, 'derive'))
+                print(indent2, 'm:', len(m))
+                print(indent2, 'm[0]:', len(m[0]))
+                print(indent2,'layer: ', li, 'connections:', matrixll.shape(m, 'derive'))
             for li in range(nl): # iterate layers
-                print('        self.coords_map[li]', len(self.coords_map[li]))
-                print('                        coords for %d entries' % len(self.coords_map[li]))
+                print(indent2,'self.coords_map[li]', len(self.coords_map[li]))
+                print(indent2,'coords for %d entries' % len(self.coords_map[li]))
 
     def layer_num_elem(self, layer_no):
         numel = self.layers_shape[layer_no]
@@ -123,9 +123,7 @@ class MLNTopology():
         assert isinstance(h, int)
 
         matrix = self.matrices[prev_layer]
-        print('rows:', len(matrix))
         d = matrixll.shape(matrix, 'derive')
-        print('dims', d, '(w,h)', (w,h))
         assert d == (w,h)
 
         for x in range(w):
@@ -269,18 +267,16 @@ def test_MLNTopology():
     topology.add_layer(64, 1, tuple_iter((64,)))
     topology.consistency_invariance_check()
 
-    for c in tuple_iter((W, H, ChRGB)):
-        print(c)
+    #for c in tuple_iter((W, H, ChRGB)):
+    #    print(c)
     topology.add_layer(W*H*ChRGB, 3, tuple_iter((W, H, ChRGB)))
     topology.consistency_invariance_check()
 
-    print('1>>', topology.coords_map[2][0], topology.coords_map[2][3])
     assert topology.coords_map[2][0] == (0,0,0)
     assert topology.coords_map[2][3] == (0,1,0)
     topology.coord_map(2,
         lambda xyc: ((xyc[0]+1)*100 + (xyc[1]+1)*10 + (xyc[2]+1)*1, xyc[2]+1),
         newdims=2)
-    print('2>>', topology.coords_map[2][0], topology.coords_map[2][3])
     assert topology.coords_map[2][0] == (111, 1)
     assert topology.coords_map[2][3] == (121, 1)
 
@@ -298,7 +294,9 @@ def test_MLNTopology():
 
     topology.coord_map(1,
         lambda i:
-            (int(i[0]/8)*2.0, (i[0]%8)*2.0 + print0(repr(i), type(i[0]), i[0], int(i[0]/8), i[0]%8)),
+            (int(i[0]/8)*2.0, (i[0]%8)*2.0
+                #+ print0(repr(i), type(i[0]), i[0], int(i[0]/8), i[0]%8)
+            ),
         newdims=2
     )
     topology.coord_map(0,
@@ -340,8 +338,8 @@ def tuple_iter(triple, prefix=()):
 def test_tuple_iter():
     def test_tuple_iter_case(shape, expected):
         actual = [tup for tup in tuple_iter(shape)]
-        print('actual', actual)
-        print('assert', repr(actual), '==', repr(expected))
+        #print('actual', actual)
+        #print('assert', repr(actual), '==', repr(expected))
         assert repr(actual) == repr(expected)
 
     test_tuple_iter_case((1,), [(0,)])
