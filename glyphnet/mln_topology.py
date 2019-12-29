@@ -48,6 +48,8 @@ class MLNTopology():
                 #print(len(coords), self.layers_coord_dims[li])
                 assert len(coords) == self.layers_coord_dims[li]
 
+            # todo: if thorough: check len(coords) == self.layers_coord_dims[li]
+
         if nl > 0:
             assert len(self.matrices) == nl-1
         for cli in range(1, nl):
@@ -82,6 +84,7 @@ class MLNTopology():
             for li in range(nl): # iterate layers
                 print('        self.coords_map[li]', len(self.coords_map[li]))
                 print('                        coords for %d entries' % len(self.coords_map[li]))
+
     def layer_num_elem(self, layer_no):
         numel = self.layers_shape[layer_no]
         assert isinstance(numel, int)
@@ -96,6 +99,7 @@ class MLNTopology():
         self.coords_map += [None]
         self.coords_map[-1] = [tpl for tpl in coord_iterator]
          # [[(i,) for i in range(numnodes)]]
+        assert len(self.coords_map[-1]) == self.layers_shape[-1]
         if nl > 0:
             prev_layer_shape = self.layers_shape[-2]
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
@@ -103,6 +107,7 @@ class MLNTopology():
             print('connectivity_matrix', matrixll.shape(connectivity_matrix, h))
             assert matrixll.shape(connectivity_matrix, 'derive') == (w,h)
             self.matrices += [connectivity_matrix]
+
         self.report(True)
         self.consistency_invariance_check()
 
@@ -112,18 +117,20 @@ class MLNTopology():
         (prev_layer, this_layer) = (this_layer - 1, this_layer)
         next_shape = self.layers_shape[this_layer]
         prev_shape = self.layers_shape[prev_layer]
-        w = next_shape
-        h = prev_shape
+        w = prev_shape
+        h = next_shape
         assert isinstance(w, int)
         assert isinstance(h, int)
+
+        matrix = self.matrices[prev_layer]
+        print('rows:', len(matrix))
+        d = matrixll.shape(matrix, 'derive')
+        print('dims', d, '(w,h)', (w,h))
+        assert d == (w,h)
 
         for x in range(w):
             for y in range(h):
                 matrix = self.matrices[prev_layer]
-                print('matrix', repr(matrix)[:10], '...   x',x, 'y', y)
-                d = matrixll.shape(matrix, 'derive')
-                print('dims', d, '(w,h)', (w,h))
-                assert d == (w,h)
 
                 # connection_object_ref
                 conn_obj = matrix[x][y]
@@ -149,7 +156,7 @@ class MLNTopology():
         self.get_node_metadata(layer_no_next, address2_next)
         self.get_node_metadata(prev_layer_no, address1_prev)
         matrix = self.matrices[prev_layer_no]
-        assert matrix[address1_prev, address2_next] is None
+        assert matrix[address1_prev][address2_next] is None
         matrix[address1_prev][address2_next] = conn_obj
         assert conn_obj == 1
         if check:
@@ -201,10 +208,43 @@ class MLNTopology():
         assert len(coords) == dims
         return coords
 
+    """
+    # iterate over nodes
+    def iter_node(self, layer_no):
+        assert layer_no >= 0
+        neurons_count = self.layers_shape[layer_no]
+        for ni in range(neurons_count):
+            yield \
+                ni, \
+                self.matrices[layer_no], \
+                self.coords_map[layer_no]
+    """
+
+    # simple maping htat does not involve inf about conections
+    def coord_map(self, layer_no, coords_map_lambda, newdims):
+        assert layer_no >= 0
+        assert isinstance(newdims, int)
+        assert isinstance(coords_map_lambda, type(lambda:0))
+        neurons_count = self.layers_shape[layer_no]
+        # iterate over nodes
+        for ni in range(neurons_count):
+            coords = self.coords_map[layer_no][ni]
+            #assert len(coords) == self.layers_coord_dims[li]
+            assert isinstance(coords, tuple)
+            coords_new = coords_map_lambda(coords)
+            assert isinstance(coords_new, tuple)
+            assert len(coords_new) == newdims
+            self.coords_map[layer_no][ni] = coords_new
+        self.layers_coord_dims[layer_no] = newdims
+
     def get_layer_coord_system(self, layer_no):
         # typically: [3,1,1,1,...]  or [3,3,1,1,1,..]
         dims = self.layers_coord_dims[layer_no]
         return dims
+
+def print0(*args):
+    print('print0', args)
+    return 0
 
 # utilities
 def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
@@ -219,20 +259,30 @@ def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
     )
 
 def test_MLNTopology():
-    expected_shapes = [15*15*3, 128, 15*15*3]
-    expected_coords = [1, 1, 3]
+    expected_shapes = [15*15*3, 64, 15*15*3]
+    expected_coords = [1, 1, 2]
 
     topology = MLNTopology()
     (W,H,ChRGB) = (15,15,3)
     topology.add_layer(W*H*ChRGB, 1, tuple_iter((W*H*ChRGB,)))
     topology.consistency_invariance_check()
-    topology.add_layer(128, 1, tuple_iter((128,)))
+    topology.add_layer(64, 1, tuple_iter((64,)))
     topology.consistency_invariance_check()
 
     for c in tuple_iter((W, H, ChRGB)):
         print(c)
     topology.add_layer(W*H*ChRGB, 3, tuple_iter((W, H, ChRGB)))
     topology.consistency_invariance_check()
+
+    print('1>>', topology.coords_map[2][0], topology.coords_map[2][3])
+    assert topology.coords_map[2][0] == (0,0,0)
+    assert topology.coords_map[2][3] == (0,1,0)
+    topology.coord_map(2,
+        lambda xyc: ((xyc[0]+1)*100 + (xyc[1]+1)*10 + (xyc[2]+1)*1, xyc[2]+1),
+        newdims=2)
+    print('2>>', topology.coords_map[2][0], topology.coords_map[2][3])
+    assert topology.coords_map[2][0] == (111, 1)
+    assert topology.coords_map[2][3] == (121, 1)
 
     for l, numel in topology.iterate_layers():
         dims = topology.get_layer_coord_system(l)
@@ -245,6 +295,18 @@ def test_MLNTopology():
         raise Exception('no connection should exist yet')
 
     topology.connect_all(1,2, lambda c1,c2: True )
+
+    topology.coord_map(1,
+        lambda i:
+            (int(i[0]/8)*2.0, (i[0]%8)*2.0 + print0(repr(i), type(i[0]), i[0], int(i[0]/8), i[0]%8)),
+        newdims=2
+    )
+    topology.coord_map(0,
+        lambda i15x15x3:
+            (int(i15x15x3[0]/3/15), int(i15x15x3[0]/3)%15),
+        newdims=2
+    )
+
     connect_based_on_distance(topology, 0,1, 3.0)
 
     ctr1 = 0
