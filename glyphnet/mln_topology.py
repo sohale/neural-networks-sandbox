@@ -334,9 +334,8 @@ def test_MLNTopology():
     assert lambda_from_shape((15,15,3))((15*15*3-1,)) == (14,14,2)
 
     topology.coord_map(0,
-        lambda i15x15x3:
-            (int(i15x15x3[0]/3/15), int(i15x15x3[0]/3)%15),
-        newdims=2
+        lambda_from_shape1((15,15,3))
+        newdims=3
     )
 
     connect_based_on_distance(topology, 0,1, 3.0)
