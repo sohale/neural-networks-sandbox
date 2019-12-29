@@ -304,6 +304,35 @@ def test_MLNTopology():
             ),
         newdims=2
     )
+    def lassert(cond):
+        assert cond, "lassert failed"
+        return 0
+
+    def reshape_from_index(shape_tuple, val):
+        #return reshape_from_index(shape_tuple[])
+        answer = []
+        for ii in range(len(shape_tuple)-1,-1,-1):
+            nd = shape_tuple[ii]
+            r = val % nd
+            val = int(val / nd)
+            answer = [r] + answer
+        assert val == 0
+        return tuple(answer)
+
+    def tuple_from_shape1(shape, i_tuple1):
+        #return lambda idx: reshape_from_index(shape, i_tuple1[0]) + lassert(len(i_tuple1) == 1)
+        assert len(i_tuple1) == 1
+        t = reshape_from_index(shape, i_tuple1[0])
+        return t
+
+    def lambda_from_shape(shape):
+        return lambda i_tuple1: tuple_from_shape1(shape, i_tuple1)
+
+    assert lambda_from_shape((2,2,2))((0,)) == (0,0,0)
+    assert lambda_from_shape((8,8))((63,)) == (7,7)
+    assert lambda_from_shape((15,15,3))((0,)) == (0,0,0)
+    assert lambda_from_shape((15,15,3))((15*15*3-1,)) == (14,14,2)
+
     topology.coord_map(0,
         lambda i15x15x3:
             (int(i15x15x3[0]/3/15), int(i15x15x3[0]/3)%15),
