@@ -325,6 +325,7 @@ def test_MLNTopology():
         t = reshape_from_index(shape, i_tuple1[0])
         return t
 
+    # makes coord maps DSL-ish
     def lambda_from_shape(shape):
         return lambda i_tuple1: tuple_from_shape1(shape, i_tuple1)
 
@@ -334,7 +335,7 @@ def test_MLNTopology():
     assert lambda_from_shape((15,15,3))((15*15*3-1,)) == (14,14,2)
 
     topology.coord_map(0,
-        lambda_from_shape1((15,15,3))
+        lambda_from_shape((15,15,3)),
         newdims=3
     )
 
