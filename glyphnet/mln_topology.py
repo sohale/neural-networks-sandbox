@@ -12,14 +12,18 @@ class MLNTopology():
         # nominal coord system dimensions: e.g. (x,y,ch) (theta,sigma,x,y,hue) (feature_id)
         # i.e. for layer's intrinsic (functional) topology
         #  List[int]
+        # rename: coord_dims[]
         self.layers_coord_dims = []
+
 
         # connectivity_matrix: a sparse matrix of certain sort of indices. (address?)
         #   address: 1.tuple (of size len(shape))  2. string  3. raw_flat_index (int)
+        # rename: conn_matrixll[]
         self.matrices = []
         # some layers can (suggested) to be arranged in shapes/tensors
 
         # "map" as both map(v.) and a map (n.)
+        # rename: nodes_coords
         self.coords_map = []
 
         self.consistency_invariance_check()
@@ -85,6 +89,7 @@ class MLNTopology():
                 print(indent2,'self.coords_map[li]', len(self.coords_map[li]))
                 print(indent2,'coords for %d entries' % len(self.coords_map[li]))
 
+    # rename: nodes_count()
     def layer_num_elem(self, layer_no):
         numel = self.layers_shape[layer_no]
         assert isinstance(numel, int)
@@ -314,7 +319,8 @@ def test_MLNTopology():
     ctr2 = 0
     for i,j,_ in topology.iterate_connections(1,2):
         ctr2 += 1
-    print('ctr1', ctr1)
+    print('ctr1', ctr1, 'of',
+        topology.layer_num_elem(0) * topology.layer_num_elem(1) )
     print('ctr2', ctr2)
 
 
