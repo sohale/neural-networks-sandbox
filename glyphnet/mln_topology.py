@@ -71,7 +71,17 @@ class MLNTopology():
             matrixll.check(m, -1, h)
 
     def create_reverse(self):
-        return []
+        rev = MLNTopology()
+        for (i, numel) in self.iterate_layers():
+            new_layer_shape = self.layers_shape[i]
+            coord_dims = self.layers_coord_dims[i]
+            coord_iterator = self.coords_map[i]
+            rev.add_layer(new_layer_shape, coord_dims, coord_iterator)
+        for li in range(len(self.layers_shape)-1):
+            for (f, t, conn_obj) in self.iterate_connections(li, li+1):
+                rev.connect(li, f, t, conn_obj, check=False)
+        rev.consistency_invariance_check()
+        return rev
 
     @staticmethod
     def encode_matrixll(mat):
@@ -101,8 +111,6 @@ class MLNTopology():
         for i in range(len(payload)):
             assert isinstance(payload[i], str), str(i) + ':' + repr(payload[i])
 
-        print('payload:')
-        print(payload)
         return '\n'.join(payload)
 
     def report(self, internals):
@@ -154,6 +162,8 @@ class MLNTopology():
     def iterate_connections(self, prev_layer, this_layer):
         self.consistency_invariance_check()
         assert prev_layer == this_layer - 1
+        assert prev_layer >= 0
+        assert this_layer < len(self.layers_shape)
         (prev_layer, this_layer) = (this_layer - 1, this_layer)
         next_shape = self.layers_shape[this_layer]
         prev_shape = self.layers_shape[prev_layer]
@@ -394,6 +404,11 @@ def test_MLNTopology():
         revrev = rev.create_reverse()
         encoded2 = revrev.all_details()
         assert encoded2 == encoded_expected, "failed unit test for create_reverse()"
+        nl = len(t.layers_shape)
+        for i in range(nl):
+            assert t.layers_shape[i] == rev.layers_shape[nl-i-1]
+        assert encoded2 == encoded_expected, "failed unit test for create_reverse()"
+        assert False, "not actually reversed"
 
     test_create_reverse(topology)
 
