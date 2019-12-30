@@ -316,3 +316,22 @@ def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
     )
 
 MLNTopology.connect_based_on_distance = connect_based_on_distance
+
+# some utilities
+
+""" Iterated over indices of a tensor with given shape """
+def tuple_iter(triple, prefix=()):
+    #(W,H,ChRGB) = triple
+    assert isinstance(triple, tuple)
+    if len(triple) == 0:
+        raise Exception('use tuple of len > 0')
+    if len(triple) == 1:
+        dim1 = triple[0]
+        for i in range(dim1):
+            yield tuple(prefix) + (i,)
+        return
+    dim1 = triple[0]
+    for i in range(dim1):
+        for y in tuple_iter((triple[1:]), prefix=prefix + (i,)):
+            #yield (i,) + y
+            yield y

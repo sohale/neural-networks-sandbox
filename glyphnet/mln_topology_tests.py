@@ -149,22 +149,6 @@ def test_MLNTopology():
         print('------------rev-rev:')
         print(revrev.all_details())
 
-""" Iterated over indices of a tensor with given shape """
-def tuple_iter(triple, prefix=()):
-    #(W,H,ChRGB) = triple
-    assert isinstance(triple, tuple)
-    if len(triple) == 0:
-        raise Exception('use tuple of len > 0')
-    if len(triple) == 1:
-        dim1 = triple[0]
-        for i in range(dim1):
-            yield tuple(prefix) + (i,)
-        return
-    dim1 = triple[0]
-    for i in range(dim1):
-        for y in tuple_iter((triple[1:]), prefix=prefix + (i,)):
-            #yield (i,) + y
-            yield y
 
 def test_tuple_iter():
     def test_tuple_iter_case(shape, expected):
