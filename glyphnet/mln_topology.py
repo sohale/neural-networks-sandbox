@@ -165,8 +165,6 @@ class MLNTopology():
             assert matrixll.shape(connectivity_matrix, 'derive') == (w,h)
             self.matrices += [connectivity_matrix]
 
-        if not QUIET_TESTS:
-            self.report(True)
         self.consistency_invariance_check()
 
     def iterate_connections(self, prev_layer, this_layer):
@@ -317,4 +315,4 @@ def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
             radius ** 2
     )
 
-
+MLNTopology.connect_based_on_distance = connect_based_on_distance

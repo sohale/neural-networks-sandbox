@@ -40,6 +40,9 @@ def small_test_mlp():
     t.add_layer(1, 1, tuple_iter((1,)))
     t.add_layer(2, 1, tuple_iter((2,)))
     t.add_layer(3, 1, tuple_iter((3,)))
+    if not QUIET_TESTS:
+        t.report(True)
+
     conobj = 1
     t.connect(0, 0,1, conobj, check=True)
     t.connect(1, 1,2, conobj, check=True)
@@ -62,6 +65,8 @@ def test_MLNTopology():
     #    print(c)
     topology.add_layer(W*H*ChRGB, 3, tuple_iter((W, H, ChRGB)))
     topology.consistency_invariance_check()
+    if not QUIET_TESTS:
+        topology.report(True)
 
     assert topology.coords_map[2][0] == (0,0,0)
     assert topology.coords_map[2][3] == (0,1,0)
@@ -104,7 +109,7 @@ def test_MLNTopology():
         newdims=3
     )
 
-    connect_based_on_distance(topology, 0,1, 3.0)
+    MLNTopology.connect_based_on_distance(topology, 0,1, 3.0)
 
     if not QUIET_TESTS:
         ctr1 = 0
@@ -185,9 +190,5 @@ class TestStringMethods(unittest.TestCase):
         test_MLNTopology()
 
 if __name__ == '__main__':
-    # test_tuple_iter()
-    # test_MLNTopology()
-    # print('unit tests passed. fine')
-
+    print('')
     unittest.main()
-    print('unit main')
