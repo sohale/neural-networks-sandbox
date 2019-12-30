@@ -11,6 +11,8 @@ import mln_topology
 MLNTopology=mln_topology.MLNTopology
 tuple_iter=mln_topology.tuple_iter
 
+from tests.example_networks import small_test_mlp
+
 QUIET_TESTS = False
 
 def __reshape_from_index(shape_tuple, val):
@@ -36,20 +38,6 @@ def __tuple_from_shape1(shape, i_tuple1):
 def lambda_from_shape(shape):
     return lambda i_tuple1: __tuple_from_shape1(shape, i_tuple1)
 
-def small_test_mlp():
-    t = MLNTopology()
-    t.add_layer(1, 1, tuple_iter((1,)))
-    t.add_layer(2, 1, tuple_iter((2,)))
-    t.add_layer(3, 1, tuple_iter((3,)))
-    if not QUIET_TESTS:
-        t.report(True)
-
-    conobj = 1
-    t.connect(0, 0,1, conobj, check=True)
-    t.connect(1, 1,2, conobj, check=True)
-    t.connect(1, 1,1, conobj, check=True)
-    t.consistency_invariance_check()
-    return t
 
 def test_MLNTopology():
     expected_shapes = [15*15*3, 64, 15*15*3]
