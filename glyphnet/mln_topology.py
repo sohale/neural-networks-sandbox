@@ -3,6 +3,8 @@
 import numpy as np
 from matrixll import matrixll
 
+QUIET_TESTS = True
+
 class MLNTopology():
     INDEX_INT_TYPE = int
     def __init__(self):
@@ -162,11 +164,11 @@ class MLNTopology():
             prev_layer_shape = self.layers_shape[-2]
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
             connectivity_matrix = matrixll.create_matrixll(w,h, None)
-            print('connectivity_matrix', matrixll.shape(connectivity_matrix, h))
             assert matrixll.shape(connectivity_matrix, 'derive') == (w,h)
             self.matrices += [connectivity_matrix]
 
-        self.report(True)
+        if not QUIET_TESTS:
+            self.report(True)
         self.consistency_invariance_check()
 
     def iterate_connections(self, prev_layer, this_layer):
@@ -397,16 +399,17 @@ def test_MLNTopology():
 
     connect_based_on_distance(topology, 0,1, 3.0)
 
-    ctr1 = 0
-    for i,j,_ in topology.iterate_connections(0,1):
-        ctr1 += 1
+    if not QUIET_TESTS:
+        ctr1 = 0
+        for i,j,_ in topology.iterate_connections(0,1):
+            ctr1 += 1
 
-    ctr2 = 0
-    for i,j,_ in topology.iterate_connections(1,2):
-        ctr2 += 1
-    print('ctr1', ctr1, 'of',
-        topology.layer_num_elem(0) * topology.layer_num_elem(1) )
-    print('ctr2', ctr2)
+        ctr2 = 0
+        for i,j,_ in topology.iterate_connections(1,2):
+            ctr2 += 1
+        print('ctr1', ctr1, 'of',
+            topology.layer_num_elem(0) * topology.layer_num_elem(1) )
+        print('ctr2', ctr2)
 
     # unit test for create_reverse()
     def test_create_reverse(t):
@@ -438,13 +441,13 @@ def test_MLNTopology():
     t = small_mlp()
     test_create_reverse(t)
     (rev, revrev) = test_create_reverse(t)
-    print('------------original:')
-    print(t.all_details())
-    print('------------rev:')
-    print(rev.all_details())
-    print('------------rev-rev:')
-    print(revrev.all_details())
-    exit()
+    if not QUIET_TESTS:
+        print('------------original:')
+        print(t.all_details())
+        print('------------rev:')
+        print(rev.all_details())
+        print('------------rev-rev:')
+        print(revrev.all_details())
 
 """ Iterated over indices of a tensor with given shape """
 def tuple_iter(triple, prefix=()):

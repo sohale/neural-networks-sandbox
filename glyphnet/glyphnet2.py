@@ -10,7 +10,6 @@ To run:
 """
 import mln_topology
 MLNTopology = mln_topology.MLNTopology
-exit()
 
 import wireup_mltopology
 
