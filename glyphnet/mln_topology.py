@@ -319,8 +319,8 @@ def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
             radius ** 2
     )
 
-def reshape_from_index(shape_tuple, val):
-    #return reshape_from_index(shape_tuple[])
+def __reshape_from_index(shape_tuple, val):
+    #return __reshape_from_index(shape_tuple[])
     answer = []
     for ii in range(len(shape_tuple)-1,-1,-1):
         nd = shape_tuple[ii]
@@ -330,15 +330,17 @@ def reshape_from_index(shape_tuple, val):
     assert val == 0
     return tuple(answer)
 
-def tuple_from_shape1(shape, i_tuple1):
-    #return lambda idx: reshape_from_index(shape, i_tuple1[0]) + lassert(len(i_tuple1) == 1)
+""" private method.
+    param: i_tuple1 is a tuple of length 1 containning an int """
+def __tuple_from_shape1(shape, i_tuple1):
+    #return lambda idx: __reshape_from_index(shape, i_tuple1[0]) + lassert(len(i_tuple1) == 1)
     assert len(i_tuple1) == 1
-    t = reshape_from_index(shape, i_tuple1[0])
+    t = __reshape_from_index(shape, i_tuple1[0])
     return t
 
 # makes coord maps DSL-ish
 def lambda_from_shape(shape):
-    return lambda i_tuple1: tuple_from_shape1(shape, i_tuple1)
+    return lambda i_tuple1: __tuple_from_shape1(shape, i_tuple1)
 
 def small_test_mlp():
     t = MLNTopology()
