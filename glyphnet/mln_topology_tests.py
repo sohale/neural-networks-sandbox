@@ -9,6 +9,7 @@ https://docs.python.org/3/library/unittest.html#basic-example
 
 import mln_topology
 MLNTopology=mln_topology.MLNTopology
+tuple_iter=mln_topology.tuple_iter
 
 QUIET_TESTS = False
 
@@ -164,13 +165,11 @@ def test_tuple_iter():
     test_tuple_iter_case((1,1,3), [(0,0,0), (0,0,1), (0,0,2)])
 
 class TestStringMethods(unittest.TestCase):
-    def test1(self):
-        print('found me0')
 
-    def test_x(self):
+    def test_tuple_iter(self):
         test_tuple_iter()
 
-    def test_y(self):
+    def test_MLNTopology(self):
         test_MLNTopology()
 
 if __name__ == '__main__':
