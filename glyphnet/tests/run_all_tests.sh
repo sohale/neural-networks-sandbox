@@ -6,11 +6,9 @@ echo 2: $scriptDir2  # relative dir
 
 #source $scriptDir1/../source_tf1.sh
 
-#cd $scriptDir1
+cd $scriptDir1/..
 python --version
-echo "ls>"
-ls
-echo "<ls"
 #python -m unittest -v tests/mln_topology_tests
-python tests/mln_topology_tests.py
+#python tests/mln_topology_tests.py
+python mln_topology_tests.py
 
