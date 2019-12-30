@@ -319,6 +319,39 @@ def connect_based_on_distance(topo, prev_layer_no, next_layer_no, radius):
             radius ** 2
     )
 
+def reshape_from_index(shape_tuple, val):
+    #return reshape_from_index(shape_tuple[])
+    answer = []
+    for ii in range(len(shape_tuple)-1,-1,-1):
+        nd = shape_tuple[ii]
+        r = val % nd
+        val = int(val / nd)
+        answer = [r] + answer
+    assert val == 0
+    return tuple(answer)
+
+def tuple_from_shape1(shape, i_tuple1):
+    #return lambda idx: reshape_from_index(shape, i_tuple1[0]) + lassert(len(i_tuple1) == 1)
+    assert len(i_tuple1) == 1
+    t = reshape_from_index(shape, i_tuple1[0])
+    return t
+
+# makes coord maps DSL-ish
+def lambda_from_shape(shape):
+    return lambda i_tuple1: tuple_from_shape1(shape, i_tuple1)
+
+def small_test_mlp():
+    t = MLNTopology()
+    t.add_layer(1, 1, tuple_iter((1,)))
+    t.add_layer(2, 1, tuple_iter((2,)))
+    t.add_layer(3, 1, tuple_iter((3,)))
+    conobj = 1
+    t.connect(0, 0,1, conobj, check=True)
+    t.connect(1, 1,2, conobj, check=True)
+    t.connect(1, 1,1, conobj, check=True)
+    t.consistency_invariance_check()
+    return t
+
 def test_MLNTopology():
     expected_shapes = [15*15*3, 64, 15*15*3]
     expected_coords = [1, 1, 2]
@@ -362,30 +395,9 @@ def test_MLNTopology():
             ),
         newdims=2
     )
-    def lassert(cond):
-        assert cond, "lassert failed"
-        return 0
-
-    def reshape_from_index(shape_tuple, val):
-        #return reshape_from_index(shape_tuple[])
-        answer = []
-        for ii in range(len(shape_tuple)-1,-1,-1):
-            nd = shape_tuple[ii]
-            r = val % nd
-            val = int(val / nd)
-            answer = [r] + answer
-        assert val == 0
-        return tuple(answer)
-
-    def tuple_from_shape1(shape, i_tuple1):
-        #return lambda idx: reshape_from_index(shape, i_tuple1[0]) + lassert(len(i_tuple1) == 1)
-        assert len(i_tuple1) == 1
-        t = reshape_from_index(shape, i_tuple1[0])
-        return t
-
-    # makes coord maps DSL-ish
-    def lambda_from_shape(shape):
-        return lambda i_tuple1: tuple_from_shape1(shape, i_tuple1)
+    #def lassert(cond):
+    #    assert cond, "lassert failed"
+    #    return 0
 
     assert lambda_from_shape((2,2,2))((0,)) == (0,0,0)
     assert lambda_from_shape((8,8))((63,)) == (7,7)
@@ -426,19 +438,7 @@ def test_MLNTopology():
 
     test_create_reverse(topology)
 
-    def small_mlp():
-        t = MLNTopology()
-        t.add_layer(1, 1, tuple_iter((1,)))
-        t.add_layer(2, 1, tuple_iter((2,)))
-        t.add_layer(3, 1, tuple_iter((3,)))
-        conobj = 1
-        t.connect(0, 0,1, conobj, check=True)
-        t.connect(1, 1,2, conobj, check=True)
-        t.connect(1, 1,1, conobj, check=True)
-        t.consistency_invariance_check()
-        return t
-
-    t = small_mlp()
+    t = small_test_mlp()
     test_create_reverse(t)
     (rev, revrev) = test_create_reverse(t)
     if not QUIET_TESTS:
