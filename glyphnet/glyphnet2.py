@@ -12,6 +12,10 @@ import mln_topology
 MLNTopology = mln_topology.MLNTopology
 exit()
 
+import wireup_mltopology
+
+exit()
+
 import tensorflow as tf
 import numpy as np
 import time
@@ -31,8 +35,6 @@ import mln_topology
 MLNTopology = mln_topology.MLNTopology
 
 import wireup_mltopology
-
-exit()
 
 
 UNKNOWN_SIZE = -1

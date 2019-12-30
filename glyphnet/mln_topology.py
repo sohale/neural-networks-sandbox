@@ -70,6 +70,41 @@ class MLNTopology():
             assert w == len(m)
             matrixll.check(m, -1, h)
 
+    def create_reverse(self):
+        return []
+
+    @staticmethod
+    def encode_matrixll(mat):
+        return repr(mat)
+
+    def all_details(self):
+        payload = []
+        payload.append(type(self).__name__)
+
+        payload.append(repr(self.layers_shape)) # shape
+        payload.append(repr(self.layers_coord_dims)) # coord_dims
+
+        payload.append('connecitons')
+        nl = len(self.layers_shape)
+        payload.append(repr(nl))
+        for li in range(nl-1):
+            m = self.matrices[li]
+            payload.append(repr(matrixll.shape(m, 'derive')))
+            payload.append(MLNTopology.encode_matrixll(m))
+
+        payload.append('coords')
+
+        for li in range(nl):
+            coords = self.coords_map[li]
+            payload.append( repr(coords) )
+
+        for i in range(len(payload)):
+            assert isinstance(payload[i], str), str(i) + ':' + repr(payload[i])
+
+        print('payload:')
+        print(payload)
+        return '\n'.join(payload)
+
     def report(self, internals):
         nl = len(self.layers_shape)
         indent = '   '
@@ -352,6 +387,15 @@ def test_MLNTopology():
         topology.layer_num_elem(0) * topology.layer_num_elem(1) )
     print('ctr2', ctr2)
 
+    # unit test for create_reverse()
+    def test_create_reverse(t):
+        encoded_expected = t.all_details()
+        rev = t.create_reverse()
+        revrev = rev.create_reverse()
+        encoded2 = revrev.all_details()
+        assert encoded2 == encoded_expected, "failed unit test for create_reverse()"
+
+    test_create_reverse(topology)
 
 """ Iterated over indices of a tensor with given shape """
 def tuple_iter(triple, prefix=()):

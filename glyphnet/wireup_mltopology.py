@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+
+import tensorflow as tf
 
 global weights_count
 
@@ -79,6 +83,11 @@ def wireup(topology):
         nonlinearity1,
         weight_dtype,
         bias_dtype,
-        name):
+        name)
 
     return out
+
+def test_em_all():
+    pass
+
+test_em_all()
