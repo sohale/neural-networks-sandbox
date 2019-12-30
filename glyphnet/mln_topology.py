@@ -72,20 +72,30 @@ class MLNTopology():
 
     def create_reverse(self):
         rev = MLNTopology()
-        for (i, numel) in self.iterate_layers():
-            new_layer_shape = self.layers_shape[i]
-            coord_dims = self.layers_coord_dims[i]
-            coord_iterator = self.coords_map[i]
+        nl = len(self.layers_shape)
+        for li1 in reversed(range(nl)):
+            lir = nl-1 - li1
+            new_layer_shape = self.layers_shape[li1]
+            coord_dims = self.layers_coord_dims[li1]
+            coord_iterator = self.coords_map[li1]
             rev.add_layer(new_layer_shape, coord_dims, coord_iterator)
-        for li in range(len(self.layers_shape)-1):
-            for (f, t, conn_obj) in self.iterate_connections(li, li+1):
-                rev.connect(li, f, t, conn_obj, check=False)
+
+        for li in reversed(range(1,nl)):
+            lfrom1 = li-1
+            lto1 = li
+            lir = nl-1 - li
+            for (ifrom, ito, conn_obj) in self.iterate_connections(lfrom1, lto1):
+                rev.connect(lir, ito, ifrom, conn_obj, check=False)
         rev.consistency_invariance_check()
         return rev
 
     @staticmethod
     def encode_matrixll(mat):
         return repr(mat)
+
+    @staticmethod
+    def size_string(int_tuple):
+        return 'x'.join([str(i) for i in int_tuple])
 
     def all_details(self):
         payload = []
@@ -94,15 +104,15 @@ class MLNTopology():
         payload.append(repr(self.layers_shape)) # shape
         payload.append(repr(self.layers_coord_dims)) # coord_dims
 
-        payload.append('connecitons')
+        payload.append('connections:')
         nl = len(self.layers_shape)
-        payload.append(repr(nl))
+        payload.append('%d layers'% nl)
         for li in range(nl-1):
             m = self.matrices[li]
-            payload.append(repr(matrixll.shape(m, 'derive')))
+            payload.append(MLNTopology.size_string(matrixll.shape(m, 'derive')))
             payload.append(MLNTopology.encode_matrixll(m))
 
-        payload.append('coords')
+        payload.append('coords:')
 
         for li in range(nl):
             coords = self.coords_map[li]
@@ -147,7 +157,7 @@ class MLNTopology():
         self.coords_map += [None]
         self.coords_map[-1] = [tpl for tpl in coord_iterator]
          # [[(i,) for i in range(numnodes)]]
-        assert len(self.coords_map[-1]) == self.layers_shape[-1]
+        assert len(self.coords_map[-1]) == self.layers_shape[-1], 'inconsistent number of coord tuples provided'
         if nl > 0:
             prev_layer_shape = self.layers_shape[-2]
             (w,h) = (np.prod(prev_layer_shape), np.prod(new_layer_shape))
@@ -247,7 +257,8 @@ class MLNTopology():
 
     def get_node_metadata(self, layer, address):
         layer_no = layer
-        assert layer_no >= 0 and layer_no < len(self.layers_shape)
+        assert layer_no >= 0, "non-existing layer %d" % layer_no
+        assert layer_no < len(self.layers_shape), "non-existing layer %d" % layer_no
         dims = self.layers_coord_dims[layer_no]
         #self.layer_dim_names[0] = ['x', 'y', 'ch']
         #return {x: , y:}
@@ -408,9 +419,32 @@ def test_MLNTopology():
         for i in range(nl):
             assert t.layers_shape[i] == rev.layers_shape[nl-i-1]
         assert encoded2 == encoded_expected, "failed unit test for create_reverse()"
-        assert False, "not actually reversed"
+        return [rev, revrev]
 
     test_create_reverse(topology)
+
+    def small_mlp():
+        t = MLNTopology()
+        t.add_layer(1, 1, tuple_iter((1,)))
+        t.add_layer(2, 1, tuple_iter((2,)))
+        t.add_layer(3, 1, tuple_iter((3,)))
+        conobj = 1
+        t.connect(0, 0,1, conobj, check=True)
+        t.connect(1, 1,2, conobj, check=True)
+        t.connect(1, 1,1, conobj, check=True)
+        t.consistency_invariance_check()
+        return t
+
+    t = small_mlp()
+    test_create_reverse(t)
+    (rev, revrev) = test_create_reverse(t)
+    print('------------original:')
+    print(t.all_details())
+    print('------------rev:')
+    print(rev.all_details())
+    print('------------rev-rev:')
+    print(revrev.all_details())
+    exit()
 
 """ Iterated over indices of a tensor with given shape """
 def tuple_iter(triple, prefix=()):
