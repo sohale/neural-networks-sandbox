@@ -10,3 +10,4 @@ Gist:
 * New directions
 * New direction: revival:
     * I intended to use synthetic data from gf
+    * Moving to a new repo: `glyphnet`
